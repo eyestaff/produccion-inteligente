@@ -49,7 +49,7 @@ Ambos comandos usan explícitamente `--env production` para evitar advertencias 
 4. Al finalizar, `npm run deploy` te mostrará la URL de Workers, por ejemplo:
 
 ```bash
-https://produccion-inteligente.<tu-subdominio>.workers.dev
+https://produccion-inteligente.smart-group.workers.dev
 ```
 
 5. Si deseas un dominio propio, agrega tu dominio en Cloudflare y asocia el Worker a la ruta del dominio.
