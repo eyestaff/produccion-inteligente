@@ -56,5 +56,5 @@ Este documento cubre los pasos para publicar el proyecto en Cloudflare Workers y
 ## Notas importantes
 
 - El proyecto está configurado para usar el entorno `production` en `wrangler.toml`.
-- El script `npm run deploy` ejecuta `wrangler publish --env production`.
+- El script `npm run deploy` ejecuta `wrangler deploy --env production`.
 - Si en el futuro necesitas múltiples entornos, agrega nuevas secciones `env.<nombre>` en `wrangler.toml`.

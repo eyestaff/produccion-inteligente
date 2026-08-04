@@ -2,9 +2,6 @@ name = "produccion-inteligente"
 main = "src/index.ts"
 compatibility_date = "2026-08-04"
 
-[vars]
-PROJECT_NAME = "Producción inteligente"
-
 [env.production]
 name = "produccion-inteligente"
 vars = { PROJECT_NAME = "Producción inteligente" }

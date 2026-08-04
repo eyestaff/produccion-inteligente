@@ -46,7 +46,7 @@ npm run deploy
 
 Ambos comandos usan explícitamente `--env production` para evitar advertencias de Wrangler cuando hay múltiples entornos definidos.
 
-4. Al finalizar, `wrangler publish` te mostrará la URL de Workers, por ejemplo:
+4. Al finalizar, `npm run deploy` te mostrará la URL de Workers, por ejemplo:
 
 ```bash
 https://produccion-inteligente.<tu-subdominio>.workers.dev

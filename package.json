@@ -1,0 +1,39 @@
+{
+  "name": "produccion-inteligente",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prepare": "husky install",
+    "dev": "wrangler dev",
+    "build": "wrangler build --env production",
+    "deploy": "wrangler deploy --env production",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .js,.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260804.1",
+    "eslint": "^8.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "husky": "^9.0.0",
+    "lint-staged": "^14.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "5.5.4",
+    "vitest": "^1.0.0",
+    "@types/node": "^20.0.0",
+    "wrangler": "^4.0.0"
+  }
+}
