@@ -2,7 +2,7 @@
 
 Starter para una PWA con Cloudflare Workers, D1 y R2.
 
-[![CI](https://github.com/<tu-usuario>/<tu-repo>/actions/workflows/ci.yml/badge.svg)](https://github.com/<tu-usuario>/<tu-repo>/actions/workflows/ci.yml)
+[![CI](https://github.com/SmartgroupES/produccion-inteligente/actions/workflows/ci.yml/badge.svg)](https://github.com/SmartgroupES/produccion-inteligente/actions/workflows/ci.yml)
 
 ## Estructura
 
