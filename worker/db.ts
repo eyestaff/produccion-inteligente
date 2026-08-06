@@ -34,7 +34,11 @@ export async function getRecords(
   const baseQuery = query ? 'FROM records WHERE name LIKE ? OR value LIKE ?' : 'FROM records';
 
   const countQuery = `SELECT COUNT(*) as total ${baseQuery}`;
-  const countResult = await db.prepare(countQuery).first(...(query ? [likeQuery, likeQuery] : []));
+  const countStmt = db.prepare(countQuery);
+  if (query) {
+    countStmt.bind(likeQuery, likeQuery);
+  }
+  const countResult = await countStmt.first<Record<string, unknown>>();
   const total = Number(countResult?.total ?? 0);
 
   const recordsQuery = `
@@ -43,9 +47,13 @@ export async function getRecords(
     ORDER BY created_at DESC
     LIMIT ? OFFSET ?
   `;
-  const recordsResult = await db
-    .prepare(recordsQuery)
-    .all(...(query ? [likeQuery, likeQuery, limit, offset] : [limit, offset]));
+  const recordsStmt = db.prepare(recordsQuery);
+  if (query) {
+    recordsStmt.bind(likeQuery, likeQuery, limit, offset);
+  } else {
+    recordsStmt.bind(limit, offset);
+  }
+  const recordsResult = await recordsStmt.all<RecordResult>();
 
   return {
     records: recordsResult.results,
@@ -56,14 +64,16 @@ export async function getRecords(
 export async function getRecordById(db: Env['DB'], id: number): Promise<RecordResult | null> {
   const record = await db
     .prepare('SELECT id, name, value, created_at FROM records WHERE id = ?')
-    .first(id);
+    .bind(id)
+    .first<RecordResult>();
   return record ?? null;
 }
 
 export async function addRecord(db: Env['DB'], name: string, value: string): Promise<void> {
   await db
     .prepare("INSERT INTO records (name, value, created_at) VALUES (?, ?, datetime('now'))")
-    .run(name, value);
+    .bind(name, value)
+    .run();
 }
 
 export async function updateRecord(
@@ -72,9 +82,12 @@ export async function updateRecord(
   name: string,
   value: string,
 ): Promise<void> {
-  await db.prepare('UPDATE records SET name = ?, value = ? WHERE id = ?').run(name, value, id);
+  await db
+    .prepare('UPDATE records SET name = ?, value = ? WHERE id = ?')
+    .bind(name, value, id)
+    .run();
 }
 
 export async function deleteRecord(db: Env['DB'], id: number): Promise<void> {
-  await db.prepare('DELETE FROM records WHERE id = ?').run(id);
+  await db.prepare('DELETE FROM records WHERE id = ?').bind(id).run();
 }

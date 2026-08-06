@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { listAssets, uploadAsset, deleteAsset } from '../src/storage';
+import { listAssets, uploadAsset, deleteAsset } from '../worker/storage';
 
 const fakeBucket = {
   list: async () => ({ objects: [{ key: 'documento.txt' }] }),

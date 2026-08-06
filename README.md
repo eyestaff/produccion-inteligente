@@ -6,10 +6,10 @@ Starter para una PWA con Cloudflare Workers, D1 y R2.
 
 ## Estructura
 
-- `wrangler.toml` — configuración Cloudflare
-- `src/index.ts` — Worker con rutas API y PWA
-- `src/db.ts` — funciones de D1
-- `src/storage.ts` — funciones de R2
+- `worker/wrangler.toml` — configuración Cloudflare
+- `worker/index.ts` — Worker con rutas API y PWA
+- `worker/db.ts` — funciones de D1
+- `worker/storage.ts` — funciones de R2
 - `public/sw.js` — service worker offline
 - `public/manifest.webmanifest` — manifest PWA
 
@@ -32,7 +32,7 @@ npm run prepare
 
 1. `wrangler login`
 2. Crear base de datos D1 y bucket R2 en el dashboard
-3. En `wrangler.toml`, ajustar los nombres de `database_name` y `bucket_name` si es necesario
+3. En `worker/wrangler.toml`, ajustar los nombres de `database_name` y `bucket_name` si es necesario
 
 ## Publicar en Cloudflare Workers
 

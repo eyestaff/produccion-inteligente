@@ -6,29 +6,32 @@ import {
   updateRecord,
   deleteRecord,
   initializeDb,
-} from '../src/db';
+} from '../worker/db';
 
 const fakeDb = {
   exec: async () => ({ success: true }),
   prepare: (sql: string) => {
     const normalized = sql.trim();
     return {
+      bind(..._args: any[]) {
+        return this;
+      },
       all: async (..._args: any[]) => {
         if (normalized.startsWith('SELECT COUNT(*)')) {
-          return { total: 1 };
+          return { results: [] };
         }
         if (normalized.startsWith('SELECT id, name, value, created_at')) {
           return { results: [{ id: 1, name: 'sensor-1', value: '75', created_at: '2026-08-04' }] };
         }
         return { results: [] };
       },
-      run: async () => ({ success: true }),
+      run: async (..._args: any[]) => ({ success: true }),
       first: async (..._args: any[]) => {
         if (normalized.startsWith('SELECT COUNT(*)')) {
           return { total: 1 };
         }
         if (normalized.startsWith('SELECT id, name, value, created_at FROM records WHERE id = ?')) {
-          return { id: _args[0], name: 'sensor-1', value: '75', created_at: '2026-08-04' };
+          return { id: 1, name: 'sensor-1', value: '75', created_at: '2026-08-04' };
         }
         return null;
       },

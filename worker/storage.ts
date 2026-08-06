@@ -8,7 +8,7 @@ export interface PaginatedAssets {
 export async function uploadAsset(
   bucket: Env['ASSETS'],
   key: string,
-  body: BodyInit,
+  body: string | ArrayBuffer | ArrayBufferView | Blob | ReadableStream<any> | null,
 ): Promise<void> {
   await bucket.put(key, body);
 }
@@ -17,7 +17,7 @@ export async function getAsset(bucket: Env['ASSETS'], key: string): Promise<Resp
   const object = await bucket.get(key);
   return object
     ? new Response(object.body, {
-        headers: { 'Content-Type': object.httpMetadata.contentType ?? 'application/octet-stream' },
+        headers: { 'Content-Type': object.httpMetadata?.contentType ?? 'application/octet-stream' },
       })
     : null;
 }

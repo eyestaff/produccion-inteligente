@@ -7,6 +7,7 @@ import {
   updateRecord,
 } from './db';
 import { deleteAsset, getAsset, listAssets, uploadAsset } from './storage';
+import { renderAppToHtml } from '../frontend/src/ui/renderApp';
 
 export interface Env {
   DB: D1Database;
@@ -36,16 +37,16 @@ const HTML = `<!DOCTYPE html>
     <p>Bienvenido a la PWA de producción inteligente con Cloudflare Workers, D1 y R2.</p>
 
     <fieldset>
-      <legend>Registros</legend>
+      <legend>Producción estimada</legend>
       <form id="search-form" style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:flex-end; margin-bottom:1rem;">
         <label style="flex:1; min-width:220px;">
-          Buscar registros
-          <input id="search-query" placeholder="Nombre o valor" style="width:100%;" />
+          Buscar producción
+          <input id="search-query" placeholder="Producto o valor" style="width:100%;" />
         </label>
         <button type="submit">Buscar</button>
         <button type="button" id="clear-search">Mostrar todos</button>
       </form>
-      <button id="load-records">Cargar registros</button>
+      <button id="load-records">Cargar producción</button>
       <table id="records-table" style="width:100%; border-collapse: collapse; margin-top: 1rem;">
         <thead>
           <tr>
@@ -192,7 +193,7 @@ const HTML = `<!DOCTYPE html>
         currentRecordPage = page;
         const searchParam = query ? '?q=' + encodeURIComponent(query) : '';
         const pageParams = 'page=' + page + '&limit=' + recordPageSize;
-        const response = await fetch('/api/records' + (searchParam ? searchParam + '&' : '?') + pageParams);
+        const response = await fetch('/api/produccion' + (searchParam ? searchParam + '&' : '?') + pageParams);
         const payload = await response.json();
         const records = payload.records ?? [];
         const total = payload.total ?? 0;
@@ -231,7 +232,7 @@ const HTML = `<!DOCTYPE html>
           value: form.value.value,
         };
 
-        const response = await fetch('/api/records', {
+        const response = await fetch('/api/produccion', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
@@ -249,7 +250,7 @@ const HTML = `<!DOCTYPE html>
         event.preventDefault();
         const form = event.target;
         const id = form.id.value;
-        const response = await fetch('/api/records/' + encodeURIComponent(id), {
+        const response = await fetch('/api/produccion/' + encodeURIComponent(id), {
           method: 'DELETE',
         });
 
@@ -271,7 +272,7 @@ const HTML = `<!DOCTYPE html>
           value: form.value.value,
         };
 
-        const response = await fetch('/api/records/' + encodeURIComponent(id), {
+        const response = await fetch('/api/produccion/' + encodeURIComponent(id), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
@@ -289,7 +290,7 @@ const HTML = `<!DOCTYPE html>
         event.preventDefault();
         const form = event.target;
         const id = form.id.value;
-        const response = await fetch('/api/records/' + encodeURIComponent(id));
+        const response = await fetch('/api/produccion/' + encodeURIComponent(id));
         const detailEl = document.getElementById('record-detail');
 
         if (!response.ok) {
@@ -320,7 +321,7 @@ const HTML = `<!DOCTYPE html>
 
         if (button.classList.contains('delete-record')) {
           const id = button.dataset.id;
-          const response = await fetch('/api/records/' + encodeURIComponent(id), {
+          const response = await fetch('/api/produccion/' + encodeURIComponent(id), {
             method: 'DELETE',
           });
           const result = await response.json();
@@ -342,7 +343,7 @@ const HTML = `<!DOCTYPE html>
         currentAssetPage = page;
         const searchParam = query ? '?q=' + encodeURIComponent(query) : '';
         const pageParams = 'page=' + page + '&limit=' + assetPageSize;
-        const response = await fetch('/api/assets' + (searchParam ? searchParam + '&' : '?') + pageParams);
+        const response = await fetch('/api/inventario' + (searchParam ? searchParam + '&' : '?') + pageParams);
         const assetsListEl = document.getElementById('assets-list');
         if (!response.ok) {
           const error = await response.json();
@@ -363,7 +364,7 @@ const HTML = `<!DOCTYPE html>
           .map(function (key) {
             return (
               '<li style="margin-bottom:0.75rem; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #e5e7eb; padding-bottom:0.5rem;">' +
-              '<a href="/api/assets/' + encodeURIComponent(key) + '" target="_blank" rel="noreferrer">' + key + '</a>' +
+              '<a href="/api/inventario/' + encodeURIComponent(key) + '" target="_blank" rel="noreferrer">' + key + '</a>' +
               '<button type="button" data-key="' + key + '" class="delete-asset">Eliminar</button>' +
               '</li>'
             );
@@ -410,7 +411,7 @@ const HTML = `<!DOCTYPE html>
         const buffer = await file.arrayBuffer();
         const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
 
-        const response = await fetch('/api/assets', {
+        const response = await fetch('/api/inventario', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ key, content: base64 }),
@@ -429,7 +430,7 @@ const HTML = `<!DOCTYPE html>
         const button = event.target.closest('button');
         if (!button || !button.classList.contains('delete-asset')) return;
         const key = button.dataset.key;
-        const response = await fetch('/api/assets/' + encodeURIComponent(key), {
+        const response = await fetch('/api/inventario/' + encodeURIComponent(key), {
           method: 'DELETE',
         });
         const result = await response.json();
@@ -549,6 +550,24 @@ export default {
       return new Response(ICON_SVG, { headers: { 'Content-Type': 'image/svg+xml' } });
     }
 
+    if (pathname === '/api/dashboard' && request.method === 'GET') {
+      const payload = {
+        productionToday: 0,
+        wastePercent: 0,
+        inventory: 0,
+        forecast: 0,
+        weeklyProduction: [120, 135, 128, 142, 150, 161, 147],
+        stores: [
+          { name: 'Tienda 1', status: 'ok' },
+          { name: 'Tienda 2', status: 'ok' },
+        ],
+      };
+
+      return new Response(JSON.stringify(payload, null, 2), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     if (pathname === '/api/records') {
       if (request.method === 'GET') {
         await initializeDb(env.DB);
@@ -562,10 +581,11 @@ export default {
       }
 
       if (request.method === 'POST') {
-        const body = await request.json();
-        const { name, value } = body;
+        const body = (await request.json()) as { name?: unknown; value?: unknown };
+        const name = body.name;
+        const value = body.value;
 
-        if (!name || !value) {
+        if (typeof name !== 'string' || typeof value !== 'string' || !name || !value) {
           return new Response(JSON.stringify({ error: 'Missing name or value' }), {
             status: 400,
             headers: { 'Content-Type': 'application/json' },
@@ -573,7 +593,7 @@ export default {
         }
 
         await initializeDb(env.DB);
-        await addRecord(env.DB, name.toString(), value.toString());
+        await addRecord(env.DB, name, value);
         return new Response(JSON.stringify({ success: true }), {
           headers: { 'Content-Type': 'application/json' },
         });
@@ -633,9 +653,10 @@ export default {
         });
       }
 
-      const body = await request.json();
-      const { name, value } = body;
-      if (!name || !value) {
+      const body = (await request.json()) as { name?: unknown; value?: unknown };
+      const name = body.name;
+      const value = body.value;
+      if (typeof name !== 'string' || typeof value !== 'string' || !name || !value) {
         return new Response(JSON.stringify({ error: 'Missing name or value' }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
@@ -643,7 +664,7 @@ export default {
       }
 
       await initializeIfNeeded(env.DB);
-      await updateRecord(env.DB, numericId, name.toString(), value.toString());
+      await updateRecord(env.DB, numericId, name, value);
       return new Response(JSON.stringify({ success: true }), {
         headers: { 'Content-Type': 'application/json' },
       });
@@ -660,16 +681,17 @@ export default {
     }
 
     if (pathname === '/api/assets' && request.method === 'POST') {
-      const body = await request.json();
-      const { key, content } = body;
-      if (!key || !content) {
+      const body = (await request.json()) as { key?: unknown; content?: unknown };
+      const key = body.key;
+      const content = body.content;
+      if (typeof key !== 'string' || typeof content !== 'string' || !key || !content) {
         return new Response(JSON.stringify({ error: 'Missing key or content' }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
         });
       }
       const bytes = Uint8Array.from(atob(content), (c) => c.charCodeAt(0));
-      await uploadAsset(env.ASSETS, key.toString(), bytes);
+      await uploadAsset(env.ASSETS, key, bytes);
       return new Response(JSON.stringify({ success: true, key }), {
         headers: { 'Content-Type': 'application/json' },
       });
@@ -691,6 +713,24 @@ export default {
           headers: { 'Content-Type': 'application/json' },
         })
       );
+    }
+
+    if (pathname === '/assets/ui-entry.js') {
+      return new Response(`import '/assets/ui-app.js';`, {
+        headers: { 'Content-Type': 'application/javascript' },
+      });
+    }
+
+    if (
+      pathname === '/' ||
+      pathname === '/dashboard' ||
+      pathname === '/production' ||
+      pathname === '/inventory' ||
+      pathname === '/configuration'
+    ) {
+      return new Response(renderAppToHtml(pathname), {
+        headers: { 'Content-Type': 'text/html;charset=UTF-8' },
+      });
     }
 
     return new Response(HTML, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
