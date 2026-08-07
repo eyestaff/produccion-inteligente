@@ -1,3 +1,4 @@
+import { createMockContext } from './fakes/context';
 import { describe, expect, it } from 'vitest';
 import { initializeDb } from '../worker/db';
 import {
@@ -49,20 +50,24 @@ describe('db helpers', () => {
   });
 
   it('returns paginated records', async () => {
-    const result = await getRecords(fakeDb as any, 1, 'sensor', 1, 10);
+    const result = await getRecords(fakeDb as any, createMockContext(1), 'sensor', 1, 10);
     expect(result.total).toBe(1);
     expect(result.records).toHaveLength(1);
     expect(result.records[0].name).toBe('sensor-1');
   });
 
   it('returns a record by id', async () => {
-    const record = await getRecordById(fakeDb as any, 1, 1);
+    const record = await getRecordById(fakeDb as any, createMockContext(1), 1);
     expect(record).toEqual({ id: 1, name: 'sensor-1', value: '75', created_at: '2026-08-04' });
   });
 
   it('adds, updates, and deletes a record', async () => {
-    await expect(addRecord(fakeDb as any, 1, 'sensor-2', '80')).resolves.toBeUndefined();
-    await expect(updateRecord(fakeDb as any, 1, 1, 'sensor-1', '85')).resolves.toBeUndefined();
-    await expect(deleteRecord(fakeDb as any, 1, 1)).resolves.toBeUndefined();
+    await expect(
+      addRecord(fakeDb as any, createMockContext(1), 'sensor-2', '80'),
+    ).resolves.toBeUndefined();
+    await expect(
+      updateRecord(fakeDb as any, createMockContext(1), 1, 'sensor-1', '85'),
+    ).resolves.toBeUndefined();
+    await expect(deleteRecord(fakeDb as any, createMockContext(1), 1)).resolves.toBeUndefined();
   });
 });

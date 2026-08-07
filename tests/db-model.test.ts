@@ -1,3 +1,4 @@
+import { createMockContext } from './fakes/context';
 import { describe, expect, it } from 'vitest';
 import {
   createStore,
@@ -39,51 +40,57 @@ describe('d1 data model', () => {
       CREATE TABLE waste_records (id INTEGER PRIMARY KEY AUTOINCREMENT, company_id INTEGER, store_id INTEGER, product_id INTEGER, quantity INTEGER NOT NULL DEFAULT 0, reason TEXT NOT NULL DEFAULT 'unknown', recorded_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (store_id) REFERENCES stores(id), FOREIGN KEY (product_id) REFERENCES products(id));
     `);
 
-    const store = await createStore(db, 1, { name: 'Tienda 1', code: 'T1' });
-    const businessLine = await createBusinessLine(db, 1, { name: 'Línea A', code: 'LA' });
-    const product = await createProduct(db, 1, {
+    const store = await createStore(db, createMockContext(1), { name: 'Tienda 1', code: 'T1' });
+    const businessLine = await createBusinessLine(db, createMockContext(1), {
+      name: 'Línea A',
+      code: 'LA',
+    });
+    const product = await createProduct(db, createMockContext(1), {
       businessLineId: businessLine.id,
       storeId: store.id,
       code: 'P1',
       name: 'Producto A',
     });
-    const recipe = await createRecipe(db, 1, { productId: product.id, name: 'Receta A' });
-    await createRecipeItem(db, 1, {
+    const recipe = await createRecipe(db, createMockContext(1), {
+      productId: product.id,
+      name: 'Receta A',
+    });
+    await createRecipeItem(db, createMockContext(1), {
       recipeId: recipe.id,
       productId: product.id,
       quantity: 2,
       unit: 'u',
     });
-    await createInventoryEntry(db, 1, {
+    await createInventoryEntry(db, createMockContext(1), {
       storeId: store.id,
       productId: product.id,
       quantity: 10,
       reservedQuantity: 2,
       availableQuantity: 8,
     });
-    const order = await createProductionOrder(db, 1, {
+    const order = await createProductionOrder(db, createMockContext(1), {
       storeId: store.id,
       businessLineId: businessLine.id,
       targetQuantity: 5,
       status: 'planned',
     });
-    await createProductionOrderItem(db, 1, {
+    await createProductionOrderItem(db, createMockContext(1), {
       productionOrderId: order.id,
       productId: product.id,
       quantity: 5,
     });
-    await createWasteRecord(db, 1, {
+    await createWasteRecord(db, createMockContext(1), {
       storeId: store.id,
       productId: product.id,
       quantity: 1,
       reason: 'breakage',
     });
 
-    expect(await listStores(db, 1)).toHaveLength(1);
-    expect(await listBusinessLines(db, 1)).toHaveLength(1);
-    expect(await listProducts(db, 1)).toHaveLength(1);
-    expect(await listInventoryEntries(db, 1)).toHaveLength(1);
-    expect(await listProductionOrders(db, 1)).toHaveLength(1);
-    expect(await listWasteRecords(db, 1)).toHaveLength(1);
+    expect(await listStores(db, createMockContext(1))).toHaveLength(1);
+    expect(await listBusinessLines(db, createMockContext(1))).toHaveLength(1);
+    expect(await listProducts(db, createMockContext(1))).toHaveLength(1);
+    expect(await listInventoryEntries(db, createMockContext(1))).toHaveLength(1);
+    expect(await listProductionOrders(db, createMockContext(1))).toHaveLength(1);
+    expect(await listWasteRecords(db, createMockContext(1))).toHaveLength(1);
   });
 });

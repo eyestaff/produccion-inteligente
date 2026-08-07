@@ -1,3 +1,4 @@
+import { createMockContext } from './fakes/context';
 import { describe, expect, it, beforeEach } from 'vitest';
 
 import { getRecords, addRecord } from '../worker/repositories/records.repository';
@@ -66,17 +67,17 @@ describe('Records Repository - Multi-tenant Isolation', () => {
     const COMPANY_A = 1;
     const COMPANY_B = 2;
 
-    await addRecord(fakeDb as any, COMPANY_A, 'Record A1', 'Value A1');
-    await addRecord(fakeDb as any, COMPANY_A, 'Record A2', 'Value A2');
+    await addRecord(fakeDb as any, createMockContext(COMPANY_A), 'Record A1', 'Value A1');
+    await addRecord(fakeDb as any, createMockContext(COMPANY_A), 'Record A2', 'Value A2');
 
-    await addRecord(fakeDb as any, COMPANY_B, 'Record B1', 'Value B1');
+    await addRecord(fakeDb as any, createMockContext(COMPANY_B), 'Record B1', 'Value B1');
 
-    const resultA = await getRecords(fakeDb as any, COMPANY_A);
+    const resultA = await getRecords(fakeDb as any, createMockContext(COMPANY_A));
     expect(resultA.total).toBe(2);
     expect(resultA.records.map((r) => r.name)).toContain('Record A1');
     expect(resultA.records.map((r) => r.name)).not.toContain('Record B1');
 
-    const resultB = await getRecords(fakeDb as any, COMPANY_B);
+    const resultB = await getRecords(fakeDb as any, createMockContext(COMPANY_B));
     expect(resultB.total).toBe(1);
     expect(resultB.records[0].name).toBe('Record B1');
   });

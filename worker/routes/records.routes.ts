@@ -9,7 +9,7 @@ export async function handleRecordsRoute(
   authContext?: AuthContext,
 ): Promise<Response | null> {
   if (!authContext) return null;
-  const companyId = authContext.companyId;
+  const companyId = authContext;
 
   if (pathname === '/api/records') {
     const service = new RecordsService(env.DB);

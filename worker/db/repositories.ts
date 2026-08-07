@@ -58,10 +58,10 @@ async function runStatement(
 
 export async function createStore(
   db: Database,
-  ctx: RequestContext | number,
+  ctx: RequestContext,
   input: { name: string; code: string; status?: string },
 ) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+  const companyId = ctx.companyId;
   const result = await runStatement(
     db,
     'INSERT INTO stores (company_id, name, code, status) VALUES (?, ?, ?, ?)',
@@ -80,8 +80,8 @@ export async function createStore(
   return inserted;
 }
 
-export async function listStores(db: Database, ctx: RequestContext | number) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+export async function listStores(db: Database, ctx: RequestContext) {
+  const companyId = ctx.companyId;
   return runStatement(
     db,
     'SELECT id, name, code, status, created_at AS createdAt FROM stores WHERE company_id = ? ORDER BY id ASC',
@@ -90,8 +90,8 @@ export async function listStores(db: Database, ctx: RequestContext | number) {
   );
 }
 
-export async function getStoreById(db: Database, ctx: RequestContext | number, id: number) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+export async function getStoreById(db: Database, ctx: RequestContext, id: number) {
+  const companyId = ctx.companyId;
   return runStatement(
     db,
     'SELECT id, name, code, status, created_at AS createdAt FROM stores WHERE id = ? AND company_id = ?',
@@ -102,11 +102,11 @@ export async function getStoreById(db: Database, ctx: RequestContext | number, i
 
 export async function updateStore(
   db: Database,
-  ctx: RequestContext | number,
+  ctx: RequestContext,
   id: number,
   input: Partial<{ name: string; code: string; status: string }>,
 ) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+  const companyId = ctx.companyId;
   const columns: string[] = [];
   const values: unknown[] = [];
   if (input.name !== undefined) {
@@ -133,8 +133,8 @@ export async function updateStore(
   );
 }
 
-export async function deleteStore(db: Database, ctx: RequestContext | number, id: number) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+export async function deleteStore(db: Database, ctx: RequestContext, id: number) {
+  const companyId = ctx.companyId;
   return runStatement(
     db,
     'DELETE FROM stores WHERE id = ? AND company_id = ?',
@@ -145,10 +145,10 @@ export async function deleteStore(db: Database, ctx: RequestContext | number, id
 
 export async function createBusinessLine(
   db: Database,
-  ctx: RequestContext | number,
+  ctx: RequestContext,
   input: { name: string; code: string; status?: string },
 ) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+  const companyId = ctx.companyId;
   const result = await runStatement(
     db,
     'INSERT INTO business_lines (company_id, name, code, status) VALUES (?, ?, ?, ?)',
@@ -167,8 +167,8 @@ export async function createBusinessLine(
   return inserted;
 }
 
-export async function listBusinessLines(db: Database, ctx: RequestContext | number) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+export async function listBusinessLines(db: Database, ctx: RequestContext) {
+  const companyId = ctx.companyId;
   return runStatement(
     db,
     'SELECT id, name, code, status, created_at AS createdAt FROM business_lines WHERE company_id = ? ORDER BY id ASC',
@@ -179,7 +179,7 @@ export async function listBusinessLines(db: Database, ctx: RequestContext | numb
 
 export async function createProduct(
   db: Database,
-  ctx: RequestContext | number,
+  ctx: RequestContext,
   input: {
     businessLineId?: number | null;
     storeId?: number | null;
@@ -188,7 +188,7 @@ export async function createProduct(
     status?: string;
   },
 ) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+  const companyId = ctx.companyId;
   const result = await runStatement(
     db,
     'INSERT INTO products (company_id, business_line_id, store_id, code, name, status) VALUES (?, ?, ?, ?, ?, ?)',
@@ -214,8 +214,8 @@ export async function createProduct(
   return inserted;
 }
 
-export async function listProducts(db: Database, ctx: RequestContext | number) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+export async function listProducts(db: Database, ctx: RequestContext) {
+  const companyId = ctx.companyId;
   return runStatement(
     db,
     'SELECT id, business_line_id AS businessLineId, store_id AS storeId, code, name, status, created_at AS createdAt FROM products WHERE company_id = ? ORDER BY id ASC',
@@ -226,10 +226,10 @@ export async function listProducts(db: Database, ctx: RequestContext | number) {
 
 export async function createRecipe(
   db: Database,
-  ctx: RequestContext | number,
+  ctx: RequestContext,
   input: { productId?: number | null; name: string; version?: number; status?: string },
 ) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+  const companyId = ctx.companyId;
   const result = await runStatement(
     db,
     'INSERT INTO recipes (company_id, product_id, name, version, status) VALUES (?, ?, ?, ?, ?)',
@@ -250,10 +250,10 @@ export async function createRecipe(
 
 export async function createRecipeItem(
   db: Database,
-  ctx: RequestContext | number,
+  ctx: RequestContext,
   input: { recipeId?: number | null; productId?: number | null; quantity?: number; unit?: string },
 ) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+  const companyId = ctx.companyId;
   const result = await runStatement(
     db,
     'INSERT INTO recipe_items (company_id, recipe_id, product_id, quantity, unit) VALUES (?, ?, ?, ?, ?)',
@@ -280,7 +280,7 @@ export async function createRecipeItem(
 
 export async function createInventoryEntry(
   db: Database,
-  ctx: RequestContext | number,
+  ctx: RequestContext,
   input: {
     storeId?: number | null;
     productId?: number | null;
@@ -289,7 +289,7 @@ export async function createInventoryEntry(
     availableQuantity?: number;
   },
 ) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+  const companyId = ctx.companyId;
   const result = await runStatement(
     db,
     'INSERT INTO inventory (company_id, store_id, product_id, quantity, reserved_quantity, available_quantity) VALUES (?, ?, ?, ?, ?, ?)',
@@ -317,7 +317,7 @@ export async function createInventoryEntry(
 
 export async function createProductionOrder(
   db: Database,
-  ctx: RequestContext | number,
+  ctx: RequestContext,
   input: {
     storeId?: number | null;
     businessLineId?: number | null;
@@ -327,7 +327,7 @@ export async function createProductionOrder(
     completedAt?: string | null;
   },
 ) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+  const companyId = ctx.companyId;
   const result = await runStatement(
     db,
     'INSERT INTO production_orders (company_id, store_id, business_line_id, status, target_quantity, started_at, completed_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
@@ -356,10 +356,10 @@ export async function createProductionOrder(
 
 export async function createProductionOrderItem(
   db: Database,
-  ctx: RequestContext | number,
+  ctx: RequestContext,
   input: { productionOrderId?: number | null; productId?: number | null; quantity?: number },
 ) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+  const companyId = ctx.companyId;
   const result = await runStatement(
     db,
     'INSERT INTO production_order_items (company_id, production_order_id, product_id, quantity) VALUES (?, ?, ?, ?)',
@@ -380,10 +380,10 @@ export async function createProductionOrderItem(
 
 export async function createWasteRecord(
   db: Database,
-  ctx: RequestContext | number,
+  ctx: RequestContext,
   input: { storeId?: number | null; productId?: number | null; quantity?: number; reason?: string },
 ) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+  const companyId = ctx.companyId;
   const result = await runStatement(
     db,
     'INSERT INTO waste_records (company_id, store_id, product_id, quantity, reason) VALUES (?, ?, ?, ?, ?)',
@@ -408,8 +408,8 @@ export async function createWasteRecord(
   return inserted;
 }
 
-export async function listInventoryEntries(db: Database, ctx: RequestContext | number) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+export async function listInventoryEntries(db: Database, ctx: RequestContext) {
+  const companyId = ctx.companyId;
   return runStatement(
     db,
     'SELECT id, store_id AS storeId, product_id AS productId, quantity, reserved_quantity AS reservedQuantity, available_quantity AS availableQuantity FROM inventory WHERE company_id = ? ORDER BY id ASC',
@@ -418,8 +418,8 @@ export async function listInventoryEntries(db: Database, ctx: RequestContext | n
   );
 }
 
-export async function listProductionOrders(db: Database, ctx: RequestContext | number) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+export async function listProductionOrders(db: Database, ctx: RequestContext) {
+  const companyId = ctx.companyId;
   return runStatement(
     db,
     'SELECT id, store_id AS storeId, business_line_id AS businessLineId, status, target_quantity AS targetQuantity, started_at AS startedAt, completed_at AS completedAt FROM production_orders WHERE company_id = ? ORDER BY id ASC',
@@ -428,8 +428,8 @@ export async function listProductionOrders(db: Database, ctx: RequestContext | n
   );
 }
 
-export async function listWasteRecords(db: Database, ctx: RequestContext | number) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+export async function listWasteRecords(db: Database, ctx: RequestContext) {
+  const companyId = ctx.companyId;
   return runStatement(
     db,
     'SELECT id, store_id AS storeId, product_id AS productId, quantity, reason FROM waste_records WHERE company_id = ? ORDER BY id ASC',
@@ -438,12 +438,8 @@ export async function listWasteRecords(db: Database, ctx: RequestContext | numbe
   );
 }
 
-export async function getInventoryByProduct(
-  db: Database,
-  ctx: RequestContext | number,
-  productId: number,
-) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+export async function getInventoryByProduct(db: Database, ctx: RequestContext, productId: number) {
+  const companyId = ctx.companyId;
   return runStatement(
     db,
     'SELECT id, store_id AS storeId, product_id AS productId, quantity, reserved_quantity AS reservedQuantity, available_quantity AS availableQuantity FROM inventory WHERE product_id = ? AND company_id = ?',
@@ -454,10 +450,10 @@ export async function getInventoryByProduct(
 
 export async function getProductionOrdersByStore(
   db: Database,
-  ctx: RequestContext | number,
+  ctx: RequestContext,
   storeId: number,
 ) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+  const companyId = ctx.companyId;
   return runStatement(
     db,
     'SELECT id, store_id AS storeId, business_line_id AS businessLineId, status, target_quantity AS targetQuantity, started_at AS startedAt, completed_at AS completedAt FROM production_orders WHERE store_id = ? AND company_id = ?',
@@ -466,12 +462,8 @@ export async function getProductionOrdersByStore(
   );
 }
 
-export async function getWasteRecordsByStore(
-  db: Database,
-  ctx: RequestContext | number,
-  storeId: number,
-) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+export async function getWasteRecordsByStore(db: Database, ctx: RequestContext, storeId: number) {
+  const companyId = ctx.companyId;
   return runStatement(
     db,
     'SELECT id, store_id AS storeId, product_id AS productId, quantity, reason FROM waste_records WHERE store_id = ? AND company_id = ?',
@@ -482,11 +474,11 @@ export async function getWasteRecordsByStore(
 
 export async function getInventoryByStoreAndProduct(
   db: Database,
-  ctx: RequestContext | number,
+  ctx: RequestContext,
   storeId: number,
   productId: number,
 ) {
-  const companyId = typeof ctx === 'number' ? ctx : ctx.companyId;
+  const companyId = ctx.companyId;
   return runStatement(
     db,
     'SELECT id, store_id AS storeId, product_id AS productId, quantity, reserved_quantity AS reservedQuantity, available_quantity AS availableQuantity FROM inventory WHERE store_id = ? AND product_id = ? AND company_id = ?',

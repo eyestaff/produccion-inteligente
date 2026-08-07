@@ -1,3 +1,4 @@
+import type { RequestContext } from '../models/context';
 import type { Env } from '../index';
 import {
   getRecords,
@@ -12,27 +13,27 @@ export class RecordsService {
   constructor(private db: Env['DB']) {}
 
   async listRecords(
-    companyId: number,
+    ctx: RequestContext,
     query?: string,
     page = 1,
     limit = 10,
   ): Promise<PaginatedRecords> {
-    return getRecords(this.db, companyId, query, page, limit);
+    return getRecords(this.db, ctx, query, page, limit);
   }
 
-  async getRecord(companyId: number, id: number): Promise<RecordResult | null> {
-    return getRecordById(this.db, companyId, id);
+  async getRecord(ctx: RequestContext, id: number): Promise<RecordResult | null> {
+    return getRecordById(this.db, ctx, id);
   }
 
-  async createRecord(companyId: number, name: string, value: string): Promise<void> {
-    await addRecord(this.db, companyId, name, value);
+  async createRecord(ctx: RequestContext, name: string, value: string): Promise<void> {
+    await addRecord(this.db, ctx, name, value);
   }
 
-  async modifyRecord(companyId: number, id: number, name: string, value: string): Promise<void> {
-    await updateRecord(this.db, companyId, id, name, value);
+  async modifyRecord(ctx: RequestContext, id: number, name: string, value: string): Promise<void> {
+    await updateRecord(this.db, ctx, id, name, value);
   }
 
-  async removeRecord(companyId: number, id: number): Promise<void> {
-    await deleteRecord(this.db, companyId, id);
+  async removeRecord(ctx: RequestContext, id: number): Promise<void> {
+    await deleteRecord(this.db, ctx, id);
   }
 }
