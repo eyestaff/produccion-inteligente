@@ -7735,6 +7735,42 @@ Todas estas funcionalidades deberán integrarse sin romper la arquitectura exist
 
 ---
 
+# Política de Contexto de Ejecución
+
+Toda operación sobre datos de negocio deberá ejecutarse dentro de un RequestContext autenticado.
+
+El cliente nunca podrá proporcionar ni modificar directamente:
+
+- `companyId`
+- `userId`
+- `role`
+
+Estos valores deberán obtenerse exclusivamente a partir de la sesión autenticada validada por el middleware.
+
+La arquitectura deberá evolucionar progresivamente hacia un único objeto:
+
+```typescript
+interface RequestContext {
+  userId: string;
+  companyId: string;
+  role: string;
+}
+```
+
+Todas las capas nuevas del sistema deberán diseñarse para aceptar un RequestContext en lugar de parámetros aislados.
+
+Objetivos:
+
+- Eliminar el paso manual de companyId entre capas.
+- Centralizar la información del usuario autenticado.
+- Facilitar futuras extensiones (permisos, locale, timezone, feature flags, auditoría, tracing).
+- Reducir errores de seguridad.
+- Mantener una arquitectura consistente.
+
+Ninguna decisión de diseño debe dificultar esta evolución (por ejemplo, omitiendo paso de parámetros estandarizados entre el Router y los Servicios).
+
+---
+
 # Cultura del Proyecto
 
 Producción Inteligente se desarrollará siguiendo una cultura de mejora continua.

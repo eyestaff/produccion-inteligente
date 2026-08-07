@@ -20,4 +20,13 @@ interface RequestContext {
 }
 ```
 
+Todas las capas nuevas del sistema deberán diseñarse para aceptar un RequestContext en lugar de parámetros aislados.
+Objetivos:
+
+- Eliminar el paso manual de `companyId` entre capas.
+- Centralizar la información del usuario autenticado.
+- Facilitar futuras extensiones (permisos, locale, timezone, feature flags, auditoría, tracing).
+- Reducir errores de seguridad.
+- Mantener una arquitectura consistente.
+
 Evitar decisiones de diseño que dificulten esta evolución.
