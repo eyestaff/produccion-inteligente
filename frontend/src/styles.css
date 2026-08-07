@@ -343,3 +343,94 @@ body {
     align-self: flex-start;
   }
 }
+
+/* Skeletons */
+.skeleton-pulse {
+  background: linear-gradient(90deg, var(--panel-muted) 25%, var(--border) 50%, var(--panel-muted) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite linear;
+  border-radius: 4px;
+}
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Toasts */
+.toast-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 9999;
+}
+.toast {
+  padding: 1rem 1.5rem;
+  border-radius: 6px;
+  background: var(--panel);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  animation: slide-in 0.3s ease-out;
+  font-weight: 500;
+  border-left: 4px solid var(--border);
+}
+.toast-success { border-left-color: #10b981; }
+.toast-error { border-left-color: #ef4444; }
+.toast-info { border-left-color: #3b82f6; }
+@keyframes slide-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  color: var(--muted);
+  background: var(--panel);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+}
+.empty-state-icon {
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+.empty-state h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text);
+}
+.empty-state-action {
+  margin-top: 1.5rem;
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(23, 32, 51, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal-content {
+  background: var(--panel);
+  border-radius: 8px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+.modal-content input, .modal-content select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}

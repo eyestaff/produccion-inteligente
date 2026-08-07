@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+content = """import { useEffect, useState } from 'react';
 import { ProductionAPI, ProductionOrder, DashboardKPIs } from '../services/production';
 import { useToast } from '../ui/ToastProvider';
 import { SkeletonRow } from '../ui/Skeleton';
@@ -131,3 +131,6 @@ export function ProductionDashboard() {
     </div>
   );
 }
+"""
+with open('frontend/src/pages/ProductionDashboard.tsx', 'w') as f:
+    f.write(content)

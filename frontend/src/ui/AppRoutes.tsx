@@ -2,6 +2,7 @@ import { Route, Routes, Navigate } from 'react-router-dom';
 import { AppShell } from './AppShell';
 import { ConfigurationPage, DashboardPage, InventoryPage, ProductsPage, RecipesPage } from './pages';
 import { LoginPage } from '../pages/Login';
+import { ToastProvider } from './ToastProvider';
 import { ProductionDashboard } from '../pages/ProductionDashboard';
 import { getAuthToken } from '../services/api';
 
@@ -12,6 +13,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 export function AppRoutes() {
   return (
+    <ToastProvider>
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
@@ -24,5 +26,6 @@ export function AppRoutes() {
         <Route path="/configuration" element={<ConfigurationPage />} />
       </Route>
     </Routes>
+    </ToastProvider>
   );
 }
