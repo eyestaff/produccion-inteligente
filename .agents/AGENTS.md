@@ -47,3 +47,9 @@ Objetivos:
     2. ¿Qué información necesitará consumir la IA?
     3. ¿Qué KPIs producirá este dominio?
     4. ¿Qué eventos publicará este dominio al resto del sistema?
+11. **Higiene de Sprints y Git:**
+    - Ningún Sprint podrá incluir cambios pertenecientes a otro Sprint.
+    - Antes de comenzar un Sprint verificar que el working tree está limpio; de lo contrario detenerse e informar.
+    - Prohibido usar `git add .` para cerrar un Sprint sin verificar archivos modificados.
+    - Revisar el diff antes de cada commit.
+    - Si se corrige un error heredado (ej. para pasar lint/typecheck/build), debe documentarse como "Correcciones incidentales" en el informe final.

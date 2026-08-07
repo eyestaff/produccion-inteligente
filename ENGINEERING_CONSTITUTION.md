@@ -81,3 +81,12 @@ Toda decisión de diseño deberá valorar su impacto colateral sobre los demás 
 ## 15. GOBERNANZA
 
 Ningún cambio arquitectónico importante podrá implementarse de forma directa. Todo cambio requiere: propuesta, justificación, evaluación de alternativas, y aprobación final.
+
+## 16. HIGIENE DE SPRINTS Y CONTROL DE VERSIONES
+
+1. Ningún Sprint podrá incluir cambios pertenecientes a otro Sprint.
+2. Antes de comenzar un Sprint se deberá verificar obligatoriamente que el working tree está limpio.
+3. Si se detectan archivos modificados que pertenecen a un Sprint anterior, el agente deberá detenerse e informarlo antes de escribir una sola línea de código.
+4. Queda terminantemente prohibido utilizar `git add .` para cerrar un Sprint sin haber verificado previamente qué archivos forman parte del cambio.
+5. Antes de cada commit se deberá revisar el diff y confirmar que todos los archivos modificados pertenecen realmente al objetivo aprobado del Sprint.
+6. Si durante un Sprint es necesario corregir un error heredado para que lint, typecheck o build pasen, deberá indicarse explícitamente en el informe final bajo una sección denominada "Correcciones incidentales", diferenciándolas de los cambios funcionales del Sprint.
