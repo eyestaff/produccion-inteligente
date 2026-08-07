@@ -7,6 +7,7 @@ import { ProductionDashboard } from '../pages/ProductionDashboard';
 import { InventoryDashboard } from '../pages/InventoryDashboard';
 import { InventoryLedger } from '../pages/InventoryLedger';
 import { PurchasingPage } from '../pages/PurchasingPage';
+import { ForecastDashboard } from '../pages/ForecastDashboard';
 import { getAuthToken } from '../services/api';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -20,8 +21,9 @@ export function AppRoutes() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
-        <Route path="/" element={<DashboardPage />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/forecast" element={<ForecastDashboard />} />
         <Route path="/production" element={<ProductionDashboard />} />
         <Route path="/inventory" element={<InventoryDashboard />} />
         <Route path="/inventory/:storeId/product/:productId" element={<InventoryLedger />} />

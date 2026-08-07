@@ -5,6 +5,7 @@ describe('ui routes', () => {
   it('exposes the main navigation routes', () => {
     expect(APP_ROUTES.map((route: { path: string }) => route.path)).toEqual([
       '/dashboard',
+      '/forecast',
       '/production',
       '/inventory',
       '/purchasing',

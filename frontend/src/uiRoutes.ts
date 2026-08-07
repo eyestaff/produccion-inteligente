@@ -6,6 +6,7 @@ export interface AppRoute {
 
 export const APP_ROUTES: AppRoute[] = [
   { path: '/dashboard', title: 'Dashboard', description: 'Resumen general del estado del negocio' },
+  { path: '/forecast', title: 'Forecast', description: 'Predicciones y sugerencias de IA' },
   { path: '/production', title: 'Producción', description: 'Seguimiento de la producción diaria' },
   { path: '/inventory', title: 'Inventario', description: 'Control del inventario y activos' },
   {
