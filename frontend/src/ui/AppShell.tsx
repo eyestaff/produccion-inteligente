@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { APP_ROUTES, getPageTitle } from '../uiRoutes';
 import { useMemo, useState } from 'react';
-import { Search, Moon, Sun, ChevronRight, ChevronLeft, Menu, FileText } from 'lucide-react';
+import { Search, Moon, Sun, ChevronRight, ChevronLeft, Menu, FileText, LogOut } from 'lucide-react';
 
 interface AppShellProps {
   title?: string;
@@ -61,6 +61,18 @@ export function AppShell({ title }: AppShellProps) {
             </div>
             <button type="button" className="theme-toggle icon-button" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
               {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+            </button>
+            <button 
+              type="button" 
+              className="icon-button" 
+              onClick={() => {
+                import('../services/api').then(({ logout }) => logout());
+              }}
+              title="Cerrar sesión"
+              style={{ border: '1px solid var(--border)', background: 'var(--panel)', color: 'var(--text)', padding: '0.6rem 0.9rem', borderRadius: '999px', cursor: 'pointer' }}
+            >
+              <LogOut size={18} />
+              <span style={{ marginLeft: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Salir</span>
             </button>
           </div>
         </header>
