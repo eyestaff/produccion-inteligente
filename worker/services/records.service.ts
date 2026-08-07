@@ -11,23 +11,28 @@ import type { PaginatedRecords, RecordResult } from '../models/records';
 export class RecordsService {
   constructor(private db: Env['DB']) {}
 
-  async listRecords(query?: string, page = 1, limit = 10): Promise<PaginatedRecords> {
-    return getRecords(this.db, query, page, limit);
+  async listRecords(
+    companyId: number,
+    query?: string,
+    page = 1,
+    limit = 10,
+  ): Promise<PaginatedRecords> {
+    return getRecords(this.db, companyId, query, page, limit);
   }
 
-  async getRecord(id: number): Promise<RecordResult | null> {
-    return getRecordById(this.db, id);
+  async getRecord(companyId: number, id: number): Promise<RecordResult | null> {
+    return getRecordById(this.db, companyId, id);
   }
 
-  async createRecord(name: string, value: string): Promise<void> {
-    await addRecord(this.db, name, value);
+  async createRecord(companyId: number, name: string, value: string): Promise<void> {
+    await addRecord(this.db, companyId, name, value);
   }
 
-  async updateRecord(id: number, name: string, value: string): Promise<void> {
-    await updateRecord(this.db, id, name, value);
+  async modifyRecord(companyId: number, id: number, name: string, value: string): Promise<void> {
+    await updateRecord(this.db, companyId, id, name, value);
   }
 
-  async removeRecord(id: number): Promise<void> {
-    await deleteRecord(this.db, id);
+  async removeRecord(companyId: number, id: number): Promise<void> {
+    await deleteRecord(this.db, companyId, id);
   }
 }

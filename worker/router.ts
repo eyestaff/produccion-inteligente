@@ -20,6 +20,7 @@ export async function router(request: Request, env: Env): Promise<Response> {
   response = await handleAuthRoute(pathname, request, env);
   if (response) return response;
 
+  let authContext: any = null;
   // Protect API routes except auth
   if (
     pathname.startsWith('/api/') &&
@@ -30,19 +31,20 @@ export async function router(request: Request, env: Env): Promise<Response> {
     if (authResult.errorResponse) {
       return authResult.errorResponse;
     }
+    authContext = authResult.auth;
   }
 
-  response = await handleDashboardRoute(pathname, request, env);
+  response = await handleDashboardRoute(pathname, request, env, authContext);
   if (response) return response;
 
   if (pathname.startsWith('/api/records')) {
     await initializeDb(env.DB);
   }
 
-  response = await handleRecordsRoute(pathname, request, env);
+  response = await handleRecordsRoute(pathname, request, env, authContext);
   if (response) return response;
 
-  response = await handleAssetsRoute(pathname, request, env);
+  response = await handleAssetsRoute(pathname, request, env, authContext);
   if (response) return response;
 
   response = await handlePwaRoute(pathname);

@@ -1,13 +1,18 @@
 import type { Env } from '../index';
 import { AssetsService } from '../services/assets.service';
+import type { AuthContext } from '../models/auth';
 
 export async function handleAssetsRoute(
   pathname: string,
   request: Request,
   env: Env,
+  authContext?: AuthContext,
 ): Promise<Response | null> {
+  if (!authContext) return null;
+  const companyId = authContext.companyId;
+
   if (pathname === '/api/assets') {
-    const service = new AssetsService(env.ASSETS);
+    const service = new AssetsService(env.ASSETS, companyId);
     const url = new URL(request.url);
 
     if (request.method === 'GET') {
@@ -41,7 +46,7 @@ export async function handleAssetsRoute(
   }
 
   if (pathname.startsWith('/api/assets/')) {
-    const service = new AssetsService(env.ASSETS);
+    const service = new AssetsService(env.ASSETS, companyId);
     const key = pathname.slice('/api/assets/'.length);
 
     if (request.method === 'DELETE') {

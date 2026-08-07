@@ -1,11 +1,16 @@
 import type { Env } from '../index';
 import { RecordsService } from '../services/records.service';
+import type { AuthContext } from '../models/auth';
 
 export async function handleRecordsRoute(
   pathname: string,
   request: Request,
   env: Env,
+  authContext?: AuthContext,
 ): Promise<Response | null> {
+  if (!authContext) return null;
+  const companyId = authContext.companyId;
+
   if (pathname === '/api/records') {
     const service = new RecordsService(env.DB);
     const url = new URL(request.url);
@@ -14,8 +19,8 @@ export async function handleRecordsRoute(
       const query = url.searchParams.get('q') ?? undefined;
       const page = Number(url.searchParams.get('page') ?? '1');
       const limit = Number(url.searchParams.get('limit') ?? '10');
-      const { records, total } = await service.listRecords(query, page, limit);
-      return new Response(JSON.stringify({ records, total }, null, 2), {
+      const data = await service.listRecords(companyId, query, page, limit);
+      return new Response(JSON.stringify(data, null, 2), {
         headers: { 'Content-Type': 'application/json' },
       });
     }
@@ -25,14 +30,11 @@ export async function handleRecordsRoute(
       const name = body.name;
       const value = body.value;
 
-      if (typeof name !== 'string' || typeof value !== 'string' || !name || !value) {
-        return new Response(JSON.stringify({ error: 'Missing name or value' }), {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        });
+      if (typeof name !== 'string' || typeof value !== 'string') {
+        return new Response('Invalid body', { status: 400 });
       }
 
-      await service.createRecord(name, value);
+      await service.createRecord(companyId, name, value);
       return new Response(JSON.stringify({ success: true }), {
         headers: { 'Content-Type': 'application/json' },
       });
@@ -43,23 +45,17 @@ export async function handleRecordsRoute(
 
   if (pathname.startsWith('/api/records/')) {
     const service = new RecordsService(env.DB);
-    const idStr = pathname.slice('/api/records/'.length);
-    const numericId = Number(idStr);
+    const idParam = pathname.slice('/api/records/'.length);
+    const id = Number(idParam);
 
-    if (!idStr || Number.isNaN(numericId)) {
-      return new Response(JSON.stringify({ error: 'Invalid record id' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    if (isNaN(id)) {
+      return new Response('Invalid id', { status: 400 });
     }
 
     if (request.method === 'GET') {
-      const record = await service.getRecord(numericId);
+      const record = await service.getRecord(companyId, id);
       if (!record) {
-        return new Response(JSON.stringify({ error: 'Record not found' }), {
-          status: 404,
-          headers: { 'Content-Type': 'application/json' },
-        });
+        return new Response('Not found', { status: 404 });
       }
 
       return new Response(JSON.stringify(record, null, 2), {
@@ -68,7 +64,7 @@ export async function handleRecordsRoute(
     }
 
     if (request.method === 'DELETE') {
-      await service.removeRecord(numericId);
+      await service.removeRecord(companyId, id);
       return new Response(JSON.stringify({ success: true }), {
         headers: { 'Content-Type': 'application/json' },
       });
@@ -78,14 +74,12 @@ export async function handleRecordsRoute(
       const body = (await request.json()) as { name?: unknown; value?: unknown };
       const name = body.name;
       const value = body.value;
-      if (typeof name !== 'string' || typeof value !== 'string' || !name || !value) {
-        return new Response(JSON.stringify({ error: 'Missing name or value' }), {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        });
+
+      if (typeof name !== 'string' || typeof value !== 'string') {
+        return new Response('Invalid body', { status: 400 });
       }
 
-      await service.updateRecord(numericId, name, value);
+      await service.modifyRecord(companyId, id, name, value);
       return new Response(JSON.stringify({ success: true }), {
         headers: { 'Content-Type': 'application/json' },
       });

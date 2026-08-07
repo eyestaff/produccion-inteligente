@@ -3,69 +3,84 @@ import type { RecordResult, PaginatedRecords } from '../models/records';
 
 export async function getRecords(
   db: Env['DB'],
+  companyId: number,
   query?: string,
   page = 1,
   limit = 10,
 ): Promise<PaginatedRecords> {
   const offset = (page - 1) * limit;
-  const likeQuery = query ? `%${query}%` : undefined;
-  const baseQuery = query ? 'FROM records WHERE name LIKE ? OR value LIKE ?' : 'FROM records';
 
-  const countQuery = `SELECT COUNT(*) as total ${baseQuery}`;
-  const countStmt = db.prepare(countQuery);
-  if (query) {
-    countStmt.bind(likeQuery, likeQuery);
-  }
-  const countResult = await countStmt.first<Record<string, unknown>>();
-  const total = Number(countResult?.total ?? 0);
+  let recordsQuery =
+    'SELECT id, name, value, created_at as createdAt FROM records WHERE company_id = ?';
+  let countQuery = 'SELECT COUNT(*) as total FROM records WHERE company_id = ?';
+  const queryParams: any[] = [companyId];
 
-  const recordsQuery = `
-    SELECT id, name, value, created_at
-    ${baseQuery}
-    ORDER BY created_at DESC
-    LIMIT ? OFFSET ?
-  `;
-  const recordsStmt = db.prepare(recordsQuery);
   if (query) {
-    recordsStmt.bind(likeQuery, likeQuery, limit, offset);
-  } else {
-    recordsStmt.bind(limit, offset);
+    recordsQuery += ' AND name LIKE ?';
+    countQuery += ' AND name LIKE ?';
+    queryParams.push(`%${query}%`);
   }
-  const recordsResult = await recordsStmt.all<RecordResult>();
+
+  recordsQuery += ' ORDER BY id DESC LIMIT ? OFFSET ?';
+  const countParams = [...queryParams];
+  queryParams.push(limit, offset);
+
+  const [recordsResult, countResult] = await Promise.all([
+    db
+      .prepare(recordsQuery)
+      .bind(...queryParams)
+      .all<RecordResult>(),
+    db
+      .prepare(countQuery)
+      .bind(...countParams)
+      .first<{ total: number }>(),
+  ]);
 
   return {
     records: recordsResult.results,
-    total,
+    total: countResult?.total ?? 0,
   };
 }
 
-export async function getRecordById(db: Env['DB'], id: number): Promise<RecordResult | null> {
-  const record = await db
-    .prepare('SELECT id, name, value, created_at FROM records WHERE id = ?')
-    .bind(id)
+export async function getRecordById(
+  db: Env['DB'],
+  companyId: number,
+  id: number,
+): Promise<RecordResult | null> {
+  const result = await db
+    .prepare(
+      'SELECT id, name, value, created_at as createdAt FROM records WHERE id = ? AND company_id = ?',
+    )
+    .bind(id, companyId)
     .first<RecordResult>();
-  return record ?? null;
+  return result ?? null;
 }
 
-export async function addRecord(db: Env['DB'], name: string, value: string): Promise<void> {
+export async function addRecord(
+  db: Env['DB'],
+  companyId: number,
+  name: string,
+  value: string,
+): Promise<void> {
   await db
-    .prepare("INSERT INTO records (name, value, created_at) VALUES (?, ?, datetime('now'))")
-    .bind(name, value)
+    .prepare('INSERT INTO records (company_id, name, value) VALUES (?, ?, ?)')
+    .bind(companyId, name, value)
     .run();
 }
 
 export async function updateRecord(
   db: Env['DB'],
+  companyId: number,
   id: number,
   name: string,
   value: string,
 ): Promise<void> {
   await db
-    .prepare('UPDATE records SET name = ?, value = ? WHERE id = ?')
-    .bind(name, value, id)
+    .prepare('UPDATE records SET name = ?, value = ? WHERE id = ? AND company_id = ?')
+    .bind(name, value, id, companyId)
     .run();
 }
 
-export async function deleteRecord(db: Env['DB'], id: number): Promise<void> {
-  await db.prepare('DELETE FROM records WHERE id = ?').bind(id).run();
+export async function deleteRecord(db: Env['DB'], companyId: number, id: number): Promise<void> {
+  await db.prepare('DELETE FROM records WHERE id = ? AND company_id = ?').bind(id, companyId).run();
 }
