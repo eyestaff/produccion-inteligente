@@ -1,11 +1,11 @@
+import { initializeDb } from './db';
 import {
   addRecord,
   deleteRecord,
   getRecordById,
   getRecords,
-  initializeDb,
   updateRecord,
-} from './db';
+} from './repositories/records.repository';
 import { deleteAsset, getAsset, listAssets, uploadAsset } from './storage';
 import { renderAppToHtml } from '../frontend/src/ui/renderApp';
 

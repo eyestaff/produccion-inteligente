@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { initializeDb } from '../worker/db';
 import {
   getRecords,
   addRecord,
   getRecordById,
   updateRecord,
   deleteRecord,
-  initializeDb,
-} from '../worker/db';
+} from '../worker/repositories/records.repository';
 
 const fakeDb = {
   exec: async () => ({ success: true }),
