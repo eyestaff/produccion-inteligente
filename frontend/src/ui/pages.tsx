@@ -1,141 +1,112 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { fetchApi } from '../services/api';
+import { SkeletonRow } from './Skeleton';
 import { EmptyState, PageCard } from './components';
 
 interface DashboardPayload {
   productionToday: number;
-  wastePercent: number;
+  ordersToday: number;
+  wasteToday: number;
   inventory: number;
-  forecast: number;
+  pendingOrders: number;
   weeklyProduction: number[];
   stores: Array<{ name: string; status: string }>;
 }
 
 export function DashboardPage() {
-  const [dashboardData, setDashboardData] = useState<DashboardPayload | null>(null);
+  const navigate = useNavigate();
+  const [data, setData] = useState<DashboardPayload | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const today = new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
   useEffect(() => {
-    let active = true;
-
-    async function loadDashboard() {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch('/api/dashboard');
-        if (!response.ok) {
-          throw new Error('No se pudieron cargar los datos del dashboard.');
-        }
-
-        const payload = (await response.json()) as DashboardPayload;
-        if (active) {
-          setDashboardData(payload);
-        }
-      } catch (err) {
-        if (active) {
-          setError(err instanceof Error ? err.message : 'No se pudieron cargar los datos del dashboard.');
-          setDashboardData(null);
-        }
-      } finally {
-        if (active) {
-          setLoading(false);
-        }
-      }
-    }
-
-    void loadDashboard();
-
-    return () => {
-      active = false;
-    };
+    fetchApi('/dashboard')
+      .then((d: any) => setData(d))
+      .catch(() => setData(null))
+      .finally(() => setLoading(false));
   }, []);
 
-  const kpis = useMemo(() => {
-    if (!dashboardData) {
-      return [
-        { label: 'Producción hoy', value: loading ? 'Cargando…' : '--', detail: 'Pendiente de carga' },
-        { label: 'Residuos', value: loading ? 'Cargando…' : '--', detail: 'Sin datos aún' },
-        { label: 'Inventario', value: loading ? 'Cargando…' : '--', detail: 'En espera' },
-        { label: 'Pronóstico', value: loading ? 'Cargando…' : '--', detail: 'Por confirmar' },
-      ];
-    }
-
-    return [
-      { label: 'Producción hoy', value: `${dashboardData.productionToday}`, detail: 'Simulado desde la API' },
-      { label: 'Residuos', value: `${dashboardData.wastePercent}%`, detail: 'Porcentaje estimado' },
-      { label: 'Inventario', value: `${dashboardData.inventory}`, detail: 'Unidades disponibles' },
-      { label: 'Pronóstico', value: `${dashboardData.forecast}`, detail: 'Proyección del día' },
-    ];
-  }, [dashboardData, loading]);
+  const maxWeekly = data ? Math.max(...data.weeklyProduction, 1) : 1;
 
   return (
-    <div className="dashboard-page">
-      <section className="dashboard-hero card">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      {/* Welcome Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <p className="eyebrow">Panel inicial</p>
-          <h3>Vista general de la operación</h3>
-          <p>
-            Este dashboard consume los datos simulados del endpoint de la fase 1 y muestra la estructura visual del
-            panel inicial.
-          </p>
+          <p style={{ margin: 0, color: 'var(--muted)', fontSize: '0.875rem', textTransform: 'capitalize' }}>{today}</p>
+          <h2 style={{ margin: '0.25rem 0 0' }}>Centro de Operaciones</h2>
         </div>
-      </section>
-
-      {error ? (
-        <section className="card error-card">
-          <h3>No se pudieron cargar los datos</h3>
-          <p>{error}</p>
-        </section>
-      ) : null}
-
-      <div className="kpi-grid" aria-label="Indicadores clave">
-        {kpis.map((kpi) => (
-          <article key={kpi.label} className="kpi-card">
-            <span className="kpi-label">{kpi.label}</span>
-            <strong className="kpi-value">{kpi.value}</strong>
-            <p className="kpi-detail">{kpi.detail}</p>
-          </article>
-        ))}
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button onClick={() => navigate('/production')} style={{ padding: '0.5rem 1rem', background: 'var(--text)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>
+            Centro de Producción →
+          </button>
+          <button onClick={() => navigate('/inventory')} style={{ padding: '0.5rem 1rem', background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>
+            Inventario →
+          </button>
+        </div>
       </div>
 
-      {dashboardData ? (
-        <div className="dashboard-section">
-          <section className="card">
-            <h3>Producción semanal</h3>
-            <div className="chart-bars" aria-label="Producción semanal">
-              {dashboardData.weeklyProduction.map((value, index) => (
-                <div key={`${value}-${index}`} className="bar-item">
-                  <div className="bar-fill" style={{ height: `${Math.max(12, value / 2)}px` }} />
-                  <span className="bar-label">{index + 1}</span>
+      {/* KPIs reales */}
+      <div className="kpi-grid">
+        <article className="kpi-card" style={{ cursor: 'pointer' }} onClick={() => navigate('/production')}>
+          <span className="kpi-label">Producción hoy (unidades)</span>
+          <strong className="kpi-value" style={{ color: '#10b981' }}>{loading ? '…' : data?.productionToday ?? 0}</strong>
+          <p className="kpi-detail">{loading ? '' : `${data?.ordersToday ?? 0} órdenes completadas`}</p>
+        </article>
+        <article className="kpi-card" style={{ cursor: 'pointer' }} onClick={() => navigate('/production')}>
+          <span className="kpi-label">Órdenes pendientes</span>
+          <strong className="kpi-value" style={{ color: (data?.pendingOrders ?? 0) > 0 ? '#f59e0b' : 'inherit' }}>{loading ? '…' : data?.pendingOrders ?? 0}</strong>
+          <p className="kpi-detail">Planificadas + en progreso</p>
+        </article>
+        <article className="kpi-card">
+          <span className="kpi-label">Mermas hoy (unidades)</span>
+          <strong className="kpi-value" style={{ color: (data?.wasteToday ?? 0) > 0 ? '#ef4444' : 'inherit' }}>{loading ? '…' : data?.wasteToday ?? 0}</strong>
+          <p className="kpi-detail">Rotura, caducidad, pérdida</p>
+        </article>
+        <article className="kpi-card" style={{ cursor: 'pointer' }} onClick={() => navigate('/inventory')}>
+          <span className="kpi-label">Ref. con stock activo</span>
+          <strong className="kpi-value">{loading ? '…' : data?.inventory ?? 0}</strong>
+          <p className="kpi-detail">Productos con cantidad &gt; 0</p>
+        </article>
+      </div>
+
+      {/* Producción semanal */}
+      <div className="card">
+        <h3 style={{ margin: '0 0 1.5rem' }}>Producción últimos 7 días</h3>
+        {loading ? (
+          <SkeletonRow />
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.5rem', height: '120px' }}>
+            {(data?.weeklyProduction ?? [0,0,0,0,0,0,0]).map((v, i) => (
+              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
+                <div style={{ width: '100%', background: '#e2e8f0', borderRadius: '4px 4px 0 0', display: 'flex', alignItems: 'flex-end' }}>
+                  <div style={{ width: '100%', height: `${Math.max(4, (v / maxWeekly) * 100)}px`, background: 'var(--text)', borderRadius: '4px 4px 0 0', transition: 'height 0.3s ease' }} />
                 </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="card">
-            <h3>Tiendas</h3>
-            <ul className="store-list">
-              {dashboardData.stores.map((store) => (
-                <li key={store.name} className="store-item">
-                  <span>{store.name}</span>
-                  <span className="store-status">{store.status}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        </div>
-      ) : null}
-
-      <div className="page-grid">
-        <PageCard title="Resumen diario" description="Vista general del desempeño operativo y los principales indicadores." accent="#2563eb" />
-        <PageCard title="Alertas" description="Se mostrarán incidentes y eventos críticos en el futuro." accent="#f59e0b" />
-        <PageCard title="Objetivos" description="Seguimiento de metas y cumplimiento de la producción." accent="#10b981" />
-        <EmptyState title="Contenido de ejemplo" description="Esta pantalla está preparada para recibir información real en la siguiente fase." />
+                <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>D{i+1}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* Tiendas */}
+      {data?.stores && data.stores.length > 0 && (
+        <div className="card">
+          <h3 style={{ margin: '0 0 1rem' }}>Tiendas activas</h3>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            {data.stores.map(s => (
+              <span key={s.name} style={{ padding: '4px 12px', background: '#d1fae5', color: '#065f46', borderRadius: '12px', fontSize: '0.875rem', fontWeight: 500 }}>
+                {s.name}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
 
 export function ProductionPage() {
   return (
