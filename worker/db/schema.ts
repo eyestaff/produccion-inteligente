@@ -3,6 +3,7 @@ import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const stores = sqliteTable('stores', {
   id: integer('id').primaryKey({ autoIncrement: true }),
+  companyId: integer('company_id').references(() => companies.id),
   name: text('name').notNull(),
   code: text('code').notNull().unique(),
   status: text('status').notNull().default('active'),
@@ -13,6 +14,7 @@ export const stores = sqliteTable('stores', {
 
 export const businessLines = sqliteTable('business_lines', {
   id: integer('id').primaryKey({ autoIncrement: true }),
+  companyId: integer('company_id').references(() => companies.id),
   name: text('name').notNull(),
   code: text('code').notNull().unique(),
   status: text('status').notNull().default('active'),
@@ -23,6 +25,7 @@ export const businessLines = sqliteTable('business_lines', {
 
 export const products = sqliteTable('products', {
   id: integer('id').primaryKey({ autoIncrement: true }),
+  companyId: integer('company_id').references(() => companies.id),
   businessLineId: integer('business_line_id').references(() => businessLines.id),
   storeId: integer('store_id').references(() => stores.id),
   code: text('code').notNull().unique(),
@@ -35,6 +38,7 @@ export const products = sqliteTable('products', {
 
 export const recipes = sqliteTable('recipes', {
   id: integer('id').primaryKey({ autoIncrement: true }),
+  companyId: integer('company_id').references(() => companies.id),
   productId: integer('product_id').references(() => products.id),
   name: text('name').notNull(),
   version: integer('version').notNull().default(1),
@@ -46,6 +50,7 @@ export const recipes = sqliteTable('recipes', {
 
 export const recipeItems = sqliteTable('recipe_items', {
   id: integer('id').primaryKey({ autoIncrement: true }),
+  companyId: integer('company_id').references(() => companies.id),
   recipeId: integer('recipe_id').references(() => recipes.id),
   productId: integer('product_id').references(() => products.id),
   quantity: integer('quantity').notNull().default(1),
@@ -57,6 +62,7 @@ export const recipeItems = sqliteTable('recipe_items', {
 
 export const inventory = sqliteTable('inventory', {
   id: integer('id').primaryKey({ autoIncrement: true }),
+  companyId: integer('company_id').references(() => companies.id),
   storeId: integer('store_id').references(() => stores.id),
   productId: integer('product_id').references(() => products.id),
   quantity: integer('quantity').notNull().default(0),
@@ -69,6 +75,7 @@ export const inventory = sqliteTable('inventory', {
 
 export const productionOrders = sqliteTable('production_orders', {
   id: integer('id').primaryKey({ autoIncrement: true }),
+  companyId: integer('company_id').references(() => companies.id),
   storeId: integer('store_id').references(() => stores.id),
   businessLineId: integer('business_line_id').references(() => businessLines.id),
   status: text('status').notNull().default('planned'),
@@ -82,6 +89,7 @@ export const productionOrders = sqliteTable('production_orders', {
 
 export const productionOrderItems = sqliteTable('production_order_items', {
   id: integer('id').primaryKey({ autoIncrement: true }),
+  companyId: integer('company_id').references(() => companies.id),
   productionOrderId: integer('production_order_id').references(() => productionOrders.id),
   productId: integer('product_id').references(() => products.id),
   quantity: integer('quantity').notNull().default(0),
@@ -92,6 +100,7 @@ export const productionOrderItems = sqliteTable('production_order_items', {
 
 export const wasteRecords = sqliteTable('waste_records', {
   id: integer('id').primaryKey({ autoIncrement: true }),
+  companyId: integer('company_id').references(() => companies.id),
   storeId: integer('store_id').references(() => stores.id),
   productId: integer('product_id').references(() => products.id),
   quantity: integer('quantity').notNull().default(0),

@@ -7799,4 +7799,30 @@ Todo cambio deberá contribuir a construir un producto más sólido, más manten
 
 ---
 
+# 19. Evolución de Arquitectura (Sprint 4)
+
+## Multi-tenant SaaS
+
+El proyecto ha transicionado hacia una arquitectura multiempresa (SaaS).
+
+- **Seguridad por Defecto:** Todos los repositorios exigen explícitamente el `companyId` para ejecutar operaciones (ej: `WHERE company_id = ?`). Un cliente no puede consultar o manipular datos de otra empresa.
+- **Aislamiento en API:** Las rutas protegidas reciben el `companyId` inyectado forzosamente por el `AuthContext` validado, ignorando intentos del cliente por suplantarlo en la petición.
+- **Cloudflare R2:** Almacenamiento aislado particionado lógicamente por prefijo `company_[companyId]/`.
+
+## RequestContext (Future-Proofing)
+
+La arquitectura está preparada para mutar el actual `companyId` propagado individualmente hacia un objeto compartido de tipo `RequestContext`:
+
+```typescript
+interface RequestContext {
+  userId: string;
+  companyId: string;
+  role: string;
+}
+```
+
+Ninguna decisión de diseño debe dificultar esta evolución (por ejemplo, omitiendo paso de parámetros estandarizados entre el Router y los Servicios).
+
+---
+
 **Fin del documento**
