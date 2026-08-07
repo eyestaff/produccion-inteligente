@@ -9,10 +9,9 @@ export async function handleAssetsRoute(
   authContext?: AuthContext,
 ): Promise<Response | null> {
   if (!authContext) return null;
-  const companyId = authContext.companyId;
 
   if (pathname === '/api/assets') {
-    const service = new AssetsService(env.ASSETS, companyId);
+    const service = new AssetsService(env.ASSETS, authContext);
     const url = new URL(request.url);
 
     if (request.method === 'GET') {
@@ -46,7 +45,7 @@ export async function handleAssetsRoute(
   }
 
   if (pathname.startsWith('/api/assets/')) {
-    const service = new AssetsService(env.ASSETS, companyId);
+    const service = new AssetsService(env.ASSETS, authContext);
     const key = pathname.slice('/api/assets/'.length);
 
     if (request.method === 'DELETE') {

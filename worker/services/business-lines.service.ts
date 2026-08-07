@@ -1,4 +1,4 @@
-import type { Database } from '../db';
+import type { Database } from '../db/repositories';
 import type { RequestContext } from '../models/context';
 import { createBusinessLine, listBusinessLines } from '../db/repositories';
 

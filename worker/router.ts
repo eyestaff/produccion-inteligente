@@ -22,7 +22,7 @@ export async function router(request: Request, env: Env): Promise<Response> {
   const pathname = url.pathname;
   const startTime = Date.now();
   const method = request.method;
-let authContext: any = null;
+  let authContext: any = null;
   try {
     let response: Response | null = null;
 

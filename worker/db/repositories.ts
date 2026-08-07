@@ -28,7 +28,7 @@ export async function initializeSchema(db: Database) {
 export async function runStatement(
   db: Database,
   sql: string,
-  params: unknown[] = [companyId],
+  params: unknown[] = [],
   mode: 'run' | 'get' | 'all' = 'run',
 ) {
   const statement = db.prepare(sql);
@@ -48,13 +48,14 @@ export async function runStatement(
     return boundStatement.run ? await boundStatement.run() : undefined;
   }
 
+  const anyStatement = statement as any;
   if (mode === 'get') {
-    return statement.get ? statement.get(...params) : undefined;
+    return anyStatement.get ? anyStatement.get(...params) : undefined;
   }
   if (mode === 'all') {
-    return statement.all ? statement.all(...params) : [];
+    return anyStatement.all ? anyStatement.all(...params) : [];
   }
-  return statement.run ? statement.run(...params) : undefined;
+  return anyStatement.run ? anyStatement.run(...params) : undefined;
 }
 
 export function buildStatement(db: Database, sql: string, params: unknown[] = []) {
@@ -62,12 +63,13 @@ export function buildStatement(db: Database, sql: string, params: unknown[] = []
   const isD1Statement =
     typeof statement.bind === 'function' && typeof statement.first === 'function';
   if (isD1Statement) {
-    return params.length > 0 ? statement.bind(...params) : statement;
+    return params.length > 0 ? (statement.bind as any)(...params) : statement;
   }
   // For local better-sqlite3 compatibility, we just return an object with run() and all() bound.
+  const anyStatement = statement as any;
   return {
-    run: () => (statement.run ? statement.run(...params) : undefined),
-    all: () => (statement.all ? statement.all(...params) : []),
+    run: () => (anyStatement.run ? anyStatement.run(...params) : undefined),
+    all: () => (anyStatement.all ? anyStatement.all(...params) : []),
   };
 }
 
@@ -389,7 +391,11 @@ export async function createRecipeItem(
 export async function listRecipeItems(db: Database, ctx: RequestContext, recipeId: number) {
   return runStatement(
     db,
-    'SELECT id, recipe_id AS recipeId, product_id AS productId, quantity, unit FROM recipe_items WHERE recipe_id = ? AND company_id = ? ORDER BY id ASC',
+    `SELECT ri.id, ri.recipe_id AS recipeId, ri.product_id AS productId, p.name AS productName, ri.quantity, ri.unit
+     FROM recipe_items ri
+     LEFT JOIN products p ON ri.product_id = p.id
+     WHERE ri.recipe_id = ? AND ri.company_id = ?
+     ORDER BY ri.id ASC`,
     [recipeId, ctx.companyId],
     'all',
   );
@@ -467,6 +473,7 @@ export function buildInventoryTransactionStatements(
     referenceType?: string;
     referenceId?: number;
     isReserveOnly?: boolean;
+    consumeReserve?: boolean;
   },
 ) {
   const statements = [];
@@ -505,6 +512,22 @@ export function buildInventoryTransactionStatements(
         db,
         'UPDATE inventory SET reserved_quantity = reserved_quantity + ?, available_quantity = quantity - (reserved_quantity + ?) WHERE company_id = ? AND store_id = ? AND product_id = ?',
         [input.quantityChange, input.quantityChange, ctx.companyId, input.storeId, input.productId],
+      ),
+    );
+  } else if (input.consumeReserve) {
+    statements.push(
+      buildStatement(
+        db,
+        'UPDATE inventory SET quantity = quantity + ?, reserved_quantity = reserved_quantity + ?, available_quantity = (quantity + ?) - (reserved_quantity + ?) WHERE company_id = ? AND store_id = ? AND product_id = ?',
+        [
+          input.quantityChange,
+          input.quantityChange,
+          input.quantityChange,
+          input.quantityChange,
+          ctx.companyId,
+          input.storeId,
+          input.productId,
+        ],
       ),
     );
   } else {
@@ -711,7 +734,7 @@ export async function executeAtomicBackflush(
 ) {
   const statements = [];
 
-  // 1. Ingredientes OUT
+  // 1. Ingredientes OUT (se consumen de la reserva previamente hecha)
   for (const ing of ingredientsOut) {
     statements.push(
       ...buildInventoryTransactionStatements(db, ctx, {
@@ -723,6 +746,7 @@ export async function executeAtomicBackflush(
         sourceModule: 'ProductionEngine',
         referenceType: 'ProductionOrder',
         referenceId: orderId,
+        consumeReserve: true,
       }),
     );
   }

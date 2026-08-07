@@ -1,0 +1,2 @@
+INSERT INTO companies (id, name, slug, status) VALUES (1, 'Smart Group', 'smart-group', 'active') ON CONFLICT(id) DO UPDATE SET name='Smart Group';
+INSERT INTO users (company_id, email, password_hash, password_salt, role, status) VALUES (1, 'admin@smart-group.com', '7c3462ed615fbc6ec420fd9149eb4e625950ac333e225158b53442b37049c819', '60b9de701a3317043a9bbae35ec76742', 'admin', 'active') ON CONFLICT(email) DO UPDATE SET password_hash='7c3462ed615fbc6ec420fd9149eb4e625950ac333e225158b53442b37049c819', password_salt='60b9de701a3317043a9bbae35ec76742';

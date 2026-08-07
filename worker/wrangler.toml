@@ -3,6 +3,11 @@ main = "index.ts"
 compatibility_date = "2026-08-04"
 workers_dev = true
 
+[[d1_databases]]
+binding = "DB"
+database_name = "produccion_inteligente_db"
+migrations_dir = "db/migrations"
+
 [env.production]
 name = "produccion-inteligente"
 vars = { PROJECT_NAME = "Producción inteligente" }
@@ -10,6 +15,7 @@ vars = { PROJECT_NAME = "Producción inteligente" }
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "produccion_inteligente_db"
+migrations_dir = "db/migrations"
 
 [[env.production.r2_buckets]]
 binding = "ASSETS"

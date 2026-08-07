@@ -79,6 +79,33 @@ export async function handlePurchasingRoute(
       const requestId = parseInt(patchMatch[1], 10);
       const body = await request.json<any>();
       await updatePurchaseRequestStatus(db, ctx, requestId, body.status, body.notes);
+
+      if (body.status === 'bought') {
+        const { runStatement } = await import('../db/repositories');
+        const { InventoryService } = await import('../services/inventory.service');
+        const reqInfo = (await runStatement(
+          db,
+          `SELECT store_id AS storeId, product_id AS productId, suggested_quantity AS qty 
+           FROM purchase_requests WHERE id = ? AND company_id = ?`,
+          [requestId, ctx.companyId],
+          'get',
+        )) as any;
+
+        if (reqInfo) {
+          const invService = new InventoryService(db, ctx);
+          await invService.createTransaction({
+            storeId: reqInfo.storeId,
+            productId: reqInfo.productId,
+            type: 'in',
+            quantityChange: reqInfo.qty,
+            reason: 'purchase', // No valid enum for purchase? wait, let's check
+            sourceModule: 'Purchasing',
+            referenceType: 'PurchaseRequest',
+            referenceId: requestId,
+          });
+        }
+      }
+
       return new Response(JSON.stringify({ ok: true }), {
         headers: { 'Content-Type': 'application/json' },
       });

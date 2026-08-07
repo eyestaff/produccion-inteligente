@@ -7,8 +7,11 @@ import { SkeletonRow } from '../ui/Skeleton';
 import { useStoreSelection } from '../ui/useStoreSelection';
 import { EmptyState } from '../ui/EmptyState';
 import { CreateOrderModal } from '../components/production/CreateOrderModal';
+import { CompleteOrderModal } from '../components/production/CompleteOrderModal';
+import { PrepSheetModal } from '../components/production/PrepSheetModal';
+import { ForecastAPI, ForecastRecommendation } from '../services/forecast';
 import { exportToCsv } from '../utils/csv';
-import { Printer } from 'lucide-react';
+import { Printer, Zap } from 'lucide-react';
 
 interface ProductionOrderEnriched {
   id: number;
@@ -38,21 +41,26 @@ export function ProductionDashboard() {
   const [businessLines, setBusinessLines] = useState<BusinessLine[]>([]);
   const [orders, setOrders] = useState<ProductionOrderEnriched[]>([]);
   const [kpis, setKpis] = useState<DashboardKPIs | null>(null);
+  const [suggestions, setSuggestions] = useState<ForecastRecommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [orderToComplete, setOrderToComplete] = useState<any | null>(null);
+  const [orderForSheet, setOrderForSheet] = useState<any | null>(null);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
 
   const loadData = async () => {
     if (!selectedStoreId) return;
     try {
       setLoading(true);
-      const [fetchedOrders, fetchedKpis] = await Promise.all([
+      const [fetchedOrders, fetchedKpis, forecast] = await Promise.all([
         ProductionAPI.listOrders(),
-        ProductionAPI.getDashboard()
+        ProductionAPI.getDashboard(),
+        ForecastAPI.getDashboard(selectedStoreId)
       ]);
       const filteredOrders = ((fetchedOrders as unknown as ProductionOrderEnriched[]) || []).filter(o => o.storeId === selectedStoreId);
       setOrders(filteredOrders);
       setKpis(fetchedKpis);
+      setSuggestions(forecast?.recommendations?.filter(r => r.type === 'produce') || []);
     } catch (e: any) {
       toast(e.message || 'Error cargando datos', 'error');
     } finally {
@@ -149,6 +157,29 @@ export function ProductionDashboard() {
         </div>
       </div>
 
+      {/* Suggested Production (Forecast) */}
+      {suggestions.length > 0 && (
+        <div style={{ background: 'var(--panel-muted)', border: '1px solid var(--border)', borderRadius: '8px', padding: '1.5rem' }}>
+          <h4 style={{ margin: '0 0 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#8b5cf6' }}>
+            <Zap size={18} /> Sugerencias de Hoy (Inteligencia Artificial)
+          </h4>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+            {suggestions.map(s => (
+              <div key={s.productId} style={{ background: 'var(--panel)', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border)' }}>
+                <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{s.productName}</div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--muted)', marginBottom: '0.75rem' }}>Producir: <strong style={{ color: 'var(--text)' }}>{s.suggestedQuantity}</strong> uds</div>
+                <button 
+                  onClick={() => setShowModal(true)} 
+                  style={{ width: '100%', padding: '0.5rem', background: '#8b5cf6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}
+                >
+                  Planificar
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Orders Table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         {loading ? (
@@ -190,9 +221,14 @@ export function ProductionDashboard() {
                           </button>
                         )}
                         {o.status === 'in_progress' && (
-                          <button disabled={isLoading} onClick={() => handleAction(o.id, o.storeId, 'complete')} style={{ cursor: 'pointer', padding: '4px 10px', background: '#10b981', color: 'white', border: 'none', borderRadius: '4px', fontWeight: 500, fontSize: '0.875rem' }}>
-                            {isLoading ? '…' : '✓ Completar'}
-                          </button>
+                          <>
+                            <button disabled={isLoading} onClick={() => setOrderForSheet(o)} style={{ cursor: 'pointer', padding: '4px 10px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '4px', fontWeight: 500, fontSize: '0.875rem' }}>
+                              Ver Receta
+                            </button>
+                            <button disabled={isLoading} onClick={() => setOrderToComplete(o)} style={{ cursor: 'pointer', padding: '4px 10px', background: '#10b981', color: 'white', border: 'none', borderRadius: '4px', fontWeight: 500, fontSize: '0.875rem' }}>
+                              {isLoading ? '…' : '✓ Completar'}
+                            </button>
+                          </>
                         )}
                         {o.status === 'completed' && (
                           <button onClick={() => navigate('/inventory')} style={{ cursor: 'pointer', padding: '4px 10px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.875rem' }}>
@@ -219,6 +255,12 @@ export function ProductionDashboard() {
 
       {showModal && (
         <CreateOrderModal onClose={() => setShowModal(false)} onSuccess={() => { setShowModal(false); loadData(); }} />
+      )}
+      {orderToComplete && (
+        <CompleteOrderModal order={orderToComplete} onClose={() => setOrderToComplete(null)} onSuccess={() => { setOrderToComplete(null); loadData(); }} />
+      )}
+      {orderForSheet && (
+        <PrepSheetModal order={orderForSheet} onClose={() => setOrderForSheet(null)} />
       )}
     </div>
   );
