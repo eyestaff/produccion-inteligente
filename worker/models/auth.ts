@@ -10,4 +10,5 @@ export interface LoginResponse {
 export interface AuthContext {
   user: UserResponse;
   token: string;
+  companyId: number;
 }

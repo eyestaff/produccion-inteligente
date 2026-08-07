@@ -26,13 +26,17 @@ describe('Auth API', () => {
                 return null;
               },
               run: async () => {
+                if (normalized.includes('INSERT INTO companies')) {
+                  return { success: true };
+                }
                 if (normalized.includes('INSERT INTO users')) {
                   usersData.push({
                     id: usersData.length + 1,
-                    email: args[0],
-                    passwordHash: args[1],
-                    passwordSalt: args[2],
-                    role: args[3],
+                    companyId: args[0],
+                    email: args[1],
+                    passwordHash: args[2],
+                    passwordSalt: args[3],
+                    role: args[4],
                     status: 'active',
                   });
                 }
@@ -53,9 +57,13 @@ describe('Auth API', () => {
 
     env = { DB: fakeDb } as Env;
 
+    await fakeDb
+      .prepare('INSERT INTO companies (name, slug) VALUES (?, ?)')
+      .bind('Acme', 'acme')
+      .run();
     const salt = generateSalt();
     const hash = await hashPassword('password123', salt);
-    await fakeDb.prepare('INSERT INTO users').bind('test@example.com', hash, salt, 'user').run();
+    await fakeDb.prepare('INSERT INTO users').bind(1, 'test@example.com', hash, salt, 'user').run();
   });
 
   it('should login successfully with correct credentials', async () => {

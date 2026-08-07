@@ -1,5 +1,6 @@
 export interface User {
   id: number;
+  companyId: number;
   email: string;
   passwordHash: string;
   passwordSalt: string;

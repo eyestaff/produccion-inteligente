@@ -101,8 +101,19 @@ export const wasteRecords = sqliteTable('waste_records', {
     .default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const companies = sqliteTable('companies', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
+  slug: text('slug').notNull().unique(),
+  status: text('status').notNull().default('active'),
+  createdAt: text('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const users = sqliteTable('users', {
   id: integer('id').primaryKey({ autoIncrement: true }),
+  companyId: integer('company_id').references(() => companies.id),
   email: text('email').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
   passwordSalt: text('password_salt').notNull(),

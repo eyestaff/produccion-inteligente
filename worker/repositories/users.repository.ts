@@ -4,7 +4,7 @@ import type { User, Session } from '../models/users';
 export async function findUserByEmail(db: Env['DB'], email: string): Promise<User | null> {
   const user = await db
     .prepare(
-      'SELECT id, email, password_hash as passwordHash, password_salt as passwordSalt, role, status, created_at as createdAt FROM users WHERE email = ?',
+      'SELECT id, company_id as companyId, email, password_hash as passwordHash, password_salt as passwordSalt, role, status, created_at as createdAt FROM users WHERE email = ?',
     )
     .bind(email)
     .first<User>();
@@ -14,7 +14,7 @@ export async function findUserByEmail(db: Env['DB'], email: string): Promise<Use
 export async function findUserById(db: Env['DB'], id: number): Promise<User | null> {
   const user = await db
     .prepare(
-      'SELECT id, email, password_hash as passwordHash, password_salt as passwordSalt, role, status, created_at as createdAt FROM users WHERE id = ?',
+      'SELECT id, company_id as companyId, email, password_hash as passwordHash, password_salt as passwordSalt, role, status, created_at as createdAt FROM users WHERE id = ?',
     )
     .bind(id)
     .first<User>();
@@ -23,14 +23,17 @@ export async function findUserById(db: Env['DB'], id: number): Promise<User | nu
 
 export async function createUser(
   db: Env['DB'],
+  companyId: number,
   email: string,
   passwordHash: string,
   passwordSalt: string,
   role = 'user',
 ): Promise<void> {
   await db
-    .prepare('INSERT INTO users (email, password_hash, password_salt, role) VALUES (?, ?, ?, ?)')
-    .bind(email, passwordHash, passwordSalt, role)
+    .prepare(
+      'INSERT INTO users (company_id, email, password_hash, password_salt, role) VALUES (?, ?, ?, ?, ?)',
+    )
+    .bind(companyId, email, passwordHash, passwordSalt, role)
     .run();
 }
 
