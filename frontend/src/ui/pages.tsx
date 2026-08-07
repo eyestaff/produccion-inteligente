@@ -12,8 +12,15 @@ interface DashboardPayload {
   wasteToday: number;
   inventory: number;
   pendingOrders: number;
+  pendingPurchases: number;
   weeklyProduction: number[];
-  stores: Array<{ name: string; status: string }>;
+  stores: Array<{ id: number; name: string; status: string; todayProduction: number }>;
+  criticalStock: Array<{ name: string; stock: number; minStock: number }>;
+  recentOrders: Array<{ id: number; status: string; targetQuantity: number; createdAt: string }>;
+  recentMovements: Array<{ product: string; type: string; quantityChange: number; reason: string; createdAt: string }>;
+  recentPurchases: Array<{ product: string; quantity: number; status: string; createdAt: string }>;
+  productionStatus: { planned: number; in_progress: number; completed: number };
+  forecastSummary: { produce: number; buy: number };
 }
 
 export function DashboardPage() {
@@ -47,6 +54,8 @@ export function DashboardPage() {
     }
   };
 
+  const hasAlerts = data && (data.criticalStock.length > 0 || data.wasteToday > 0);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       {/* Welcome Header */}
@@ -68,11 +77,22 @@ export function DashboardPage() {
         </div>
       </div>
 
+      {/* Alertas Operativas */}
+      {hasAlerts && (
+        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', padding: '1rem', borderRadius: '8px' }}>
+          <h4 style={{ margin: '0 0 0.5rem', color: '#b91c1c' }}>⚠️ Alertas Operativas</h4>
+          <ul style={{ margin: 0, paddingLeft: '1.2rem', color: '#991b1b', fontSize: '0.9rem' }}>
+            {data.criticalStock.length > 0 && <li>Hay {data.criticalStock.length} productos con stock crítico (bajo el mínimo).</li>}
+            {data.wasteToday > 0 && <li>Se han registrado {data.wasteToday} unidades de mermas hoy.</li>}
+          </ul>
+        </div>
+      )}
+
       {/* KPIs reales */}
-      <div className="kpi-grid">
+      <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
         <article className="kpi-card" style={{ cursor: 'pointer' }} onClick={() => navigate('/production')}>
-          <span className="kpi-label">Producción hoy (unidades)</span>
-          <strong className="kpi-value" style={{ color: '#10b981' }}>{loading ? '…' : data?.productionToday ?? 0}</strong>
+          <span className="kpi-label">Producción hoy</span>
+          <strong className="kpi-value" style={{ color: '#10b981' }}>{loading ? '…' : data?.productionToday ?? 0} <span style={{ fontSize: '1rem', fontWeight: 'normal', color: 'var(--muted)' }}>uds</span></strong>
           <p className="kpi-detail">{loading ? '' : `${data?.ordersToday ?? 0} órdenes completadas`}</p>
         </article>
         <article className="kpi-card" style={{ cursor: 'pointer' }} onClick={() => navigate('/production')}>
@@ -80,50 +100,167 @@ export function DashboardPage() {
           <strong className="kpi-value" style={{ color: (data?.pendingOrders ?? 0) > 0 ? '#f59e0b' : 'inherit' }}>{loading ? '…' : data?.pendingOrders ?? 0}</strong>
           <p className="kpi-detail">Planificadas + en progreso</p>
         </article>
+        <article className="kpi-card" style={{ cursor: 'pointer' }} onClick={() => navigate('/purchasing')}>
+          <span className="kpi-label">Compras pendientes</span>
+          <strong className="kpi-value" style={{ color: (data?.pendingPurchases ?? 0) > 0 ? '#3b82f6' : 'inherit' }}>{loading ? '…' : data?.pendingPurchases ?? 0}</strong>
+          <p className="kpi-detail">Solicitudes de reposición</p>
+        </article>
         <article className="kpi-card">
-          <span className="kpi-label">Mermas hoy (unidades)</span>
+          <span className="kpi-label">Mermas hoy</span>
           <strong className="kpi-value" style={{ color: (data?.wasteToday ?? 0) > 0 ? '#ef4444' : 'inherit' }}>{loading ? '…' : data?.wasteToday ?? 0}</strong>
-          <p className="kpi-detail">Rotura, caducidad, pérdida</p>
+          <p className="kpi-detail">Unidades descartadas</p>
         </article>
         <article className="kpi-card" style={{ cursor: 'pointer' }} onClick={() => navigate('/inventory')}>
-          <span className="kpi-label">Ref. con stock activo</span>
+          <span className="kpi-label">Inventario Activo</span>
           <strong className="kpi-value">{loading ? '…' : data?.inventory ?? 0}</strong>
-          <p className="kpi-detail">Productos con cantidad &gt; 0</p>
+          <p className="kpi-detail">Referencias con stock &gt; 0</p>
         </article>
       </div>
 
-      {/* Producción semanal */}
-      <div className="card">
-        <h3 style={{ margin: '0 0 1.5rem' }}>Producción últimos 7 días</h3>
-        {loading ? (
-          <SkeletonRow />
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.5rem', height: '120px' }}>
-            {(data?.weeklyProduction ?? [0,0,0,0,0,0,0]).map((v, i) => (
-              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
-                <div style={{ width: '100%', background: '#e2e8f0', borderRadius: '4px 4px 0 0', display: 'flex', alignItems: 'flex-end' }}>
-                  <div style={{ width: '100%', height: `${Math.max(4, (v / maxWeekly) * 100)}px`, background: 'var(--text)', borderRadius: '4px 4px 0 0', transition: 'height 0.3s ease' }} />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+        {/* Producción semanal */}
+        <div className="card">
+          <h3 style={{ margin: '0 0 1.5rem' }}>Producción últimos 7 días</h3>
+          {loading ? (
+            <SkeletonRow />
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.5rem', height: '120px' }}>
+              {(data?.weeklyProduction ?? [0,0,0,0,0,0,0]).map((v, i) => (
+                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
+                  <div style={{ width: '100%', background: '#e2e8f0', borderRadius: '4px 4px 0 0', display: 'flex', alignItems: 'flex-end' }}>
+                    <div style={{ width: '100%', height: `${Math.max(4, (v / maxWeekly) * 100)}px`, background: 'var(--text)', borderRadius: '4px 4px 0 0', transition: 'height 0.3s ease' }} />
+                  </div>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>D{i+1}</span>
                 </div>
-                <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>D{i+1}</span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Forecast Resumido */}
+        <div className="card">
+          <h3 style={{ margin: '0 0 1.5rem' }}>Sugerencias del Forecast (Día Siguiente)</h3>
+          {loading ? (
+            <SkeletonRow />
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', background: '#f3f4f6', borderRadius: '8px' }}>
+                <span style={{ fontWeight: 500, color: 'var(--text)' }}>A producir:</span>
+                <strong style={{ color: '#6366f1' }}>{data?.forecastSummary.produce} uds</strong>
               </div>
-            ))}
-          </div>
-        )}
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', background: '#f3f4f6', borderRadius: '8px' }}>
+                <span style={{ fontWeight: 500, color: 'var(--text)' }}>A comprar:</span>
+                <strong style={{ color: '#0ea5e9' }}>{data?.forecastSummary.buy} uds</strong>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Tiendas */}
-      {data?.stores && data.stores.length > 0 && (
-        <div className="card">
-          <h3 style={{ margin: '0 0 1rem' }}>Tiendas activas</h3>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            {data.stores.map(s => (
-              <span key={s.name} style={{ padding: '4px 12px', background: '#d1fae5', color: '#065f46', borderRadius: '12px', fontSize: '0.875rem', fontWeight: 500 }}>
-                {s.name}
-              </span>
-            ))}
+      {/* Grid Inferior: Tiendas y Tablas */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+        {/* Producción por tienda y Estado */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          {/* Tiendas */}
+          <div className="card">
+            <h3 style={{ margin: '0 0 1rem' }}>Producción por Tienda (Hoy)</h3>
+            {loading ? <SkeletonRow /> : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {(data?.stores || []).map(s => (
+                  <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', background: '#f8fafc', borderRadius: '6px' }}>
+                    <span style={{ fontWeight: 500 }}>{s.name}</span>
+                    <span style={{ color: '#10b981', fontWeight: 600 }}>{s.todayProduction} uds</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Estado de Producción */}
+          <div className="card">
+            <h3 style={{ margin: '0 0 1rem' }}>Estado de Órdenes (Hoy)</h3>
+            {loading ? <SkeletonRow /> : (
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ flex: 1, padding: '1rem', background: '#fef3c7', borderRadius: '8px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#d97706' }}>{data?.productionStatus.planned}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#92400e' }}>Planificadas</div>
+                </div>
+                <div style={{ flex: 1, padding: '1rem', background: '#dbeafe', borderRadius: '8px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#2563eb' }}>{data?.productionStatus.in_progress}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#1e40af' }}>En progreso</div>
+                </div>
+                <div style={{ flex: 1, padding: '1rem', background: '#d1fae5', borderRadius: '8px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#059669' }}>{data?.productionStatus.completed}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#065f46' }}>Completadas</div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-      )}
+
+        {/* Stock Crítico y Movimientos */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          {/* Stock critico */}
+          <div className="card">
+            <h3 style={{ margin: '0 0 1rem' }}>Productos con Stock Crítico</h3>
+            {loading ? <SkeletonRow /> : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border)', textAlign: 'left' }}>
+                    <th style={{ padding: '0.5rem' }}>Producto</th>
+                    <th style={{ padding: '0.5rem', textAlign: 'right' }}>Stock / Mín</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(data?.criticalStock || []).length === 0 ? (
+                    <tr><td colSpan={2} style={{ padding: '1rem', textAlign: 'center', color: 'var(--muted)' }}>No hay productos en stock crítico</td></tr>
+                  ) : (
+                    (data?.criticalStock || []).map((p, i) => (
+                      <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
+                        <td style={{ padding: '0.75rem 0.5rem' }}>{p.name}</td>
+                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right', color: '#dc2626', fontWeight: 500 }}>
+                          {p.stock} / {p.minStock}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {/* Movimientos */}
+          <div className="card">
+            <h3 style={{ margin: '0 0 1rem' }}>Últimos Movimientos</h3>
+            {loading ? <SkeletonRow /> : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border)', textAlign: 'left' }}>
+                    <th style={{ padding: '0.5rem' }}>Producto</th>
+                    <th style={{ padding: '0.5rem' }}>Tipo</th>
+                    <th style={{ padding: '0.5rem', textAlign: 'right' }}>Cant.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(data?.recentMovements || []).length === 0 ? (
+                    <tr><td colSpan={3} style={{ padding: '1rem', textAlign: 'center', color: 'var(--muted)' }}>Sin movimientos recientes</td></tr>
+                  ) : (
+                    (data?.recentMovements || []).map((m, i) => (
+                      <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
+                        <td style={{ padding: '0.75rem 0.5rem' }}>{m.product}</td>
+                        <td style={{ padding: '0.75rem 0.5rem', textTransform: 'uppercase', fontSize: '0.7rem' }}>
+                          <span style={{ padding: '2px 6px', borderRadius: '4px', background: m.type === 'in' ? '#d1fae5' : '#fee2e2', color: m.type === 'in' ? '#065f46' : '#991b1b' }}>{m.type}</span>
+                        </td>
+                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right', fontWeight: 500 }}>{m.quantityChange > 0 ? `+${m.quantityChange}` : m.quantityChange}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
