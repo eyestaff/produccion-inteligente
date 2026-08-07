@@ -14,3 +14,7 @@ database_name = "produccion_inteligente_db"
 [[env.production.r2_buckets]]
 binding = "ASSETS"
 bucket_name = "produccion-inteligente-assets"
+
+[assets]
+directory = "../frontend/dist"
+binding = "ASSETS_FETCH"

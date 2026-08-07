@@ -15,4 +15,13 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        entryFileNames: 'assets/ui-entry.js',
+        chunkFileNames: 'assets/[name].js',
+        assetFileNames: 'assets/ui-app.[ext]',
+      },
+    },
+  },
 });

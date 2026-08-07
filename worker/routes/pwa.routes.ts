@@ -17,14 +17,9 @@ export async function handlePwaRoute(pathname: string): Promise<Response | null>
     return new Response(ICON_SVG, { headers: { 'Content-Type': 'image/svg+xml' } });
   }
 
-  if (pathname === '/assets/ui-entry.js') {
-    return new Response(`import '/assets/ui-app.js';`, {
-      headers: { 'Content-Type': 'application/javascript' },
-    });
-  }
-
   if (
     pathname === '/' ||
+    pathname === '/login' ||
     pathname === '/dashboard' ||
     pathname === '/production' ||
     pathname === '/inventory' ||
