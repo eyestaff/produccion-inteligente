@@ -4,6 +4,7 @@ import { CatalogAPI, Store } from '../services/catalog';
 import { useToast } from '../ui/ToastProvider';
 import { SkeletonRow } from '../ui/Skeleton';
 import { EmptyState } from '../ui/EmptyState';
+import { useStoreSelection } from '../ui/useStoreSelection';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 const CONFIDENCE_COLORS = {
@@ -96,7 +97,7 @@ function RiskCard({ risk }: { risk: ForecastRisk }) {
 export function ForecastDashboard() {
   const toast = useToast();
   const [stores, setStores] = useState<Store[]>([]);
-  const [selectedStoreId, setSelectedStoreId] = useState<number | null>(null);
+  const [selectedStoreId, setSelectedStoreId] = useStoreSelection();
   
   const [data, setData] = useState<ForecastDashboardResult | null>(null);
   const [loading, setLoading] = useState(true);
@@ -104,8 +105,8 @@ export function ForecastDashboard() {
   useEffect(() => {
     CatalogAPI.getStores().then(s => {
       setStores(s || []);
-      if (s && s.length > 0) setSelectedStoreId(s[0].id);
-      else setLoading(false);
+      if (s && s.length > 0 && !selectedStoreId) setSelectedStoreId(s[0].id);
+      else if (s && s.length === 0) setLoading(false);
     });
   }, []);
 

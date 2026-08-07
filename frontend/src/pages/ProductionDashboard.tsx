@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProductionAPI, DashboardKPIs } from '../services/production';
+import { CatalogAPI, Store, BusinessLine } from '../services/catalog';
 import { useToast } from '../ui/ToastProvider';
 import { SkeletonRow } from '../ui/Skeleton';
+import { useStoreSelection } from '../ui/useStoreSelection';
 import { EmptyState } from '../ui/EmptyState';
 import { CreateOrderModal } from '../components/production/CreateOrderModal';
+import { exportToCsv } from '../utils/csv';
+import { Printer } from 'lucide-react';
 
 interface ProductionOrderEnriched {
   id: number;
@@ -29,6 +33,9 @@ const STATUS_LABELS: Record<string, { label: string; bg: string; color: string }
 export function ProductionDashboard() {
   const toast = useToast();
   const navigate = useNavigate();
+  const [stores, setStores] = useState<Store[]>([]);
+  const [selectedStoreId, setSelectedStoreId] = useStoreSelection();
+  const [businessLines, setBusinessLines] = useState<BusinessLine[]>([]);
   const [orders, setOrders] = useState<ProductionOrderEnriched[]>([]);
   const [kpis, setKpis] = useState<DashboardKPIs | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,13 +43,15 @@ export function ProductionDashboard() {
   const [actionLoading, setActionLoading] = useState<number | null>(null);
 
   const loadData = async () => {
+    if (!selectedStoreId) return;
     try {
       setLoading(true);
       const [fetchedOrders, fetchedKpis] = await Promise.all([
         ProductionAPI.listOrders(),
         ProductionAPI.getDashboard()
       ]);
-      setOrders((fetchedOrders as unknown as ProductionOrderEnriched[]) || []);
+      const filteredOrders = ((fetchedOrders as unknown as ProductionOrderEnriched[]) || []).filter(o => o.storeId === selectedStoreId);
+      setOrders(filteredOrders);
       setKpis(fetchedKpis);
     } catch (e: any) {
       toast(e.message || 'Error cargando datos', 'error');
@@ -51,7 +60,18 @@ export function ProductionDashboard() {
     }
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    CatalogAPI.getStores().then(s => {
+      setStores(s || []);
+      if (s && s.length > 0 && !selectedStoreId) setSelectedStoreId(s[0].id);
+      else if (s && s.length === 0) setLoading(false);
+    });
+    CatalogAPI.getBusinessLines().then(b => setBusinessLines(b || []));
+  }, []);
+
+  useEffect(() => {
+    if (selectedStoreId) loadData();
+  }, [selectedStoreId]);
 
   const handleAction = async (id: number, storeId: number, action: 'start' | 'complete' | 'cancel') => {
     if (action === 'cancel' && !confirm('¿Confirmas la cancelación de esta orden?')) return;
@@ -104,6 +124,22 @@ export function ProductionDashboard() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={{ margin: 0 }}>Órdenes de Producción</h3>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
+          {orders.length > 0 && (
+            <button
+              onClick={() => {
+                const rows = orders.map(o => [
+                  `ORD-${o.id.toString().padStart(4, '0')}`,
+                  getProductLabel(o),
+                  o.storeName || 'Tienda #' + o.storeId,
+                  STATUS_LABELS[o.status]?.label || o.status
+                ]);
+                exportToCsv('ordenes-produccion', ['Orden', 'Producto(s)', 'Tienda', 'Estado'], rows);
+              }}
+              style={{ padding: '0.5rem 1rem', background: 'transparent', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}
+            >
+              Exportar CSV
+            </button>
+          )}
           <button onClick={() => navigate('/inventory')} style={{ padding: '0.5rem 1rem', background: 'transparent', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>
             Ver Inventario
           </button>
@@ -163,6 +199,9 @@ export function ProductionDashboard() {
                             Ver stock →
                           </button>
                         )}
+                        <button onClick={() => window.print()} title="Imprimir orden" style={{ cursor: 'pointer', padding: '4px', background: 'transparent', border: 'none', color: 'var(--muted)' }}>
+                          <Printer size={18} />
+                        </button>
                         {(o.status === 'planned' || o.status === 'in_progress') && (
                           <button disabled={isLoading} onClick={() => handleAction(o.id, o.storeId, 'cancel')} style={{ cursor: 'pointer', padding: '4px 8px', color: '#ef4444', border: 'none', background: 'transparent', fontSize: '0.875rem' }}>
                             Cancelar

@@ -10,6 +10,8 @@ import { CatalogAPI, Store } from '../services/catalog';
 import { useToast } from '../ui/ToastProvider';
 import { SkeletonRow } from '../ui/Skeleton';
 import { EmptyState } from '../ui/EmptyState';
+import { useStoreSelection } from '../ui/useStoreSelection';
+import { exportToCsv } from '../utils/csv';
 
 // ─── Design tokens for each reason ──────────────────────────────────────────
 const REASON_META: Record<string, { icon: string; label: string; urgency: 'critical' | 'warning' | 'info'; bg: string; border: string; color: string; badgeBg: string; badgeColor: string }> = {
@@ -189,7 +191,7 @@ function ContextCell({ label, value, highlight }: { label: string; value: string
 export function PurchasingPage() {
   const toast = useToast();
   const [stores, setStores] = useState<Store[]>([]);
-  const [selectedStoreId, setSelectedStoreId] = useState<number | null>(null);
+  const [selectedStoreId, setSelectedStoreId] = useStoreSelection();
   const [needs, setNeeds] = useState<ReplenishmentNeed[]>([]);
   const [requests, setRequests] = useState<PurchaseRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -203,8 +205,8 @@ export function PurchasingPage() {
   useEffect(() => {
     CatalogAPI.getStores().then(s => {
       setStores(s || []);
-      if (s && s.length > 0) setSelectedStoreId(s[0].id);
-      else setLoading(false);
+      if (s && s.length > 0 && !selectedStoreId) setSelectedStoreId(s[0].id);
+      else if (s && s.length === 0) setLoading(false);
     });
   }, []);
 

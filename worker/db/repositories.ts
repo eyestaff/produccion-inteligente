@@ -56,6 +56,33 @@ export async function runStatement(
   return statement.run ? statement.run(...params) : undefined;
 }
 
+export function buildStatement(db: Database, sql: string, params: unknown[] = []) {
+  const statement = db.prepare(sql);
+  const isD1Statement =
+    typeof statement.bind === 'function' && typeof statement.first === 'function';
+  if (isD1Statement) {
+    return params.length > 0 ? statement.bind(...params) : statement;
+  }
+  // For local better-sqlite3 compatibility, we just return an object with run() and all() bound.
+  return {
+    run: () => (statement.run ? statement.run(...params) : undefined),
+    all: () => (statement.all ? statement.all(...params) : []),
+  };
+}
+
+export async function runBatch(db: Database, statements: any[]) {
+  // If db has batch method (D1), use it.
+  if ('batch' in db && typeof db.batch === 'function') {
+    return db.batch(statements);
+  }
+  // Fallback for local better-sqlite3
+  const results = [];
+  for (const stmt of statements) {
+    results.push(stmt.run());
+  }
+  return results;
+}
+
 export async function createStore(
   db: Database,
   ctx: RequestContext,
@@ -387,21 +414,19 @@ export async function getInventorySnapshot(
   storeId: number,
   productId: number,
 ) {
+  // Ensure the snapshot row exists atomically
+  await runStatement(
+    db,
+    'INSERT OR IGNORE INTO inventory (company_id, store_id, product_id, quantity, reserved_quantity, available_quantity) VALUES (?, ?, ?, 0, 0, 0)',
+    [ctx.companyId, storeId, productId],
+  );
+
   const row = await runStatement(
     db,
     'SELECT id, quantity, reserved_quantity AS reservedQuantity, available_quantity AS availableQuantity FROM inventory WHERE company_id = ? AND store_id = ? AND product_id = ?',
     [ctx.companyId, storeId, productId],
     'get',
   );
-  if (!row) {
-    // Create zero snapshot if not exists
-    await runStatement(
-      db,
-      'INSERT INTO inventory (company_id, store_id, product_id, quantity, reserved_quantity, available_quantity) VALUES (?, ?, ?, 0, 0, 0)',
-      [ctx.companyId, storeId, productId],
-    );
-    return { quantity: 0, reservedQuantity: 0, availableQuantity: 0 };
-  }
   return row as { quantity: number; reservedQuantity: number; availableQuantity: number };
 }
 
@@ -428,7 +453,7 @@ export async function listInventoryTransactions(
   );
 }
 
-export async function recordInventoryTransaction(
+export function buildInventoryTransactionStatements(
   db: Database,
   ctx: RequestContext,
   input: {
@@ -440,54 +465,67 @@ export async function recordInventoryTransaction(
     sourceModule: string;
     referenceType?: string;
     referenceId?: number;
-    isReserveOnly?: boolean; // If true, only reserved_quantity changes, not physical quantity
+    isReserveOnly?: boolean;
   },
 ) {
-  // We use db.batch to execute in a single D1 transaction if possible.
-  // For manual runStatement wrapper, we must simulate it or just run them sequentially.
-  // We will run the insert and then the relative update.
-
-  await runStatement(
-    db,
-    `INSERT INTO inventory_transactions 
-    (company_id, store_id, product_id, type, quantity_change, reason, created_by, source_module, reference_type, reference_id) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      ctx.companyId,
-      input.storeId,
-      input.productId,
-      input.type,
-      input.quantityChange,
-      input.reason,
-      ctx.userId,
-      input.sourceModule,
-      input.referenceType ?? null,
-      input.referenceId ?? null,
-    ],
+  const statements = [];
+  statements.push(
+    buildStatement(
+      db,
+      'INSERT OR IGNORE INTO inventory (company_id, store_id, product_id, quantity, reserved_quantity, available_quantity) VALUES (?, ?, ?, 0, 0, 0)',
+      [ctx.companyId, input.storeId, input.productId],
+    ),
   );
 
-  // Ensure the snapshot row exists
-  await getInventorySnapshot(db, ctx, input.storeId, input.productId);
-
-  // Relative update pattern to avoid race conditions
-  if (input.isReserveOnly) {
-    await runStatement(
+  statements.push(
+    buildStatement(
       db,
-      'UPDATE inventory SET reserved_quantity = reserved_quantity + ?, available_quantity = quantity - (reserved_quantity + ?) WHERE company_id = ? AND store_id = ? AND product_id = ?',
-      [input.quantityChange, input.quantityChange, ctx.companyId, input.storeId, input.productId],
+      `INSERT INTO inventory_transactions 
+      (company_id, store_id, product_id, type, quantity_change, reason, created_by, source_module, reference_type, reference_id) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        ctx.companyId,
+        input.storeId,
+        input.productId,
+        input.type,
+        input.quantityChange,
+        input.reason,
+        ctx.userId,
+        input.sourceModule,
+        input.referenceType ?? null,
+        input.referenceId ?? null,
+      ],
+    ),
+  );
+
+  if (input.isReserveOnly) {
+    statements.push(
+      buildStatement(
+        db,
+        'UPDATE inventory SET reserved_quantity = reserved_quantity + ?, available_quantity = quantity - (reserved_quantity + ?) WHERE company_id = ? AND store_id = ? AND product_id = ?',
+        [input.quantityChange, input.quantityChange, ctx.companyId, input.storeId, input.productId],
+      ),
     );
   } else {
-    // A regular adjustment or consumption.
-    // If it's a consumption (backflush) that resolves a reserve, the quantityChange is negative,
-    // and we also need to decrease the reserve by the same magnitude if it was previously reserved.
-    // To keep it simple, the relative update just affects physical quantity and recalculates available.
-    // (In a full implementation, consume might have a separate flag to drop reserve).
-    await runStatement(
-      db,
-      'UPDATE inventory SET quantity = quantity + ?, available_quantity = (quantity + ?) - reserved_quantity WHERE company_id = ? AND store_id = ? AND product_id = ?',
-      [input.quantityChange, input.quantityChange, ctx.companyId, input.storeId, input.productId],
+    statements.push(
+      buildStatement(
+        db,
+        'UPDATE inventory SET quantity = quantity + ?, available_quantity = (quantity + ?) - reserved_quantity WHERE company_id = ? AND store_id = ? AND product_id = ?',
+        [input.quantityChange, input.quantityChange, ctx.companyId, input.storeId, input.productId],
+      ),
     );
   }
+
+  return statements;
+}
+
+export async function recordInventoryTransaction(
+  db: Database,
+  ctx: RequestContext,
+  input: Parameters<typeof buildInventoryTransactionStatements>[2],
+) {
+  const stmts = buildInventoryTransactionStatements(db, ctx, input);
+  await runBatch(db, stmts);
 }
 
 export async function createProductionOrder(
@@ -670,35 +708,40 @@ export async function executeAtomicBackflush(
   ingredientsOut: { productId: number; quantity: number }[],
   productsIn: { productId: number; quantity: number }[],
 ) {
-  // En D1 real, deberiamos usar db.batch([...statements])
-  // Dado que el wrapper runStatement es secuencial, ejecutamos
-  // simulando atomicidad a nivel de aplicacion (para tests locales usa transacciones sincrónicas en better-sqlite3 si quisieramos, pero usaremos runStatement)
+  const statements = [];
 
   // 1. Ingredientes OUT
   for (const ing of ingredientsOut) {
-    await recordInventoryTransaction(db, ctx, {
-      storeId,
-      productId: ing.productId,
-      type: 'out',
-      quantityChange: -ing.quantity,
-      reason: 'production',
-      sourceModule: 'ProductionEngine',
-      referenceType: 'ProductionOrder',
-      referenceId: orderId,
-    });
+    statements.push(
+      ...buildInventoryTransactionStatements(db, ctx, {
+        storeId,
+        productId: ing.productId,
+        type: 'out',
+        quantityChange: -ing.quantity,
+        reason: 'production',
+        sourceModule: 'ProductionEngine',
+        referenceType: 'ProductionOrder',
+        referenceId: orderId,
+      }),
+    );
   }
 
   // 2. Productos IN
   for (const prod of productsIn) {
-    await recordInventoryTransaction(db, ctx, {
-      storeId,
-      productId: prod.productId,
-      type: 'in',
-      quantityChange: prod.quantity,
-      reason: 'production',
-      sourceModule: 'ProductionEngine',
-      referenceType: 'ProductionOrder',
-      referenceId: orderId,
-    });
+    statements.push(
+      ...buildInventoryTransactionStatements(db, ctx, {
+        storeId,
+        productId: prod.productId,
+        type: 'in',
+        quantityChange: prod.quantity,
+        reason: 'production',
+        sourceModule: 'ProductionEngine',
+        referenceType: 'ProductionOrder',
+        referenceId: orderId,
+      }),
+    );
   }
+
+  // En D1 real, usamos db.batch([...statements]) para transacciones atómicas
+  await runBatch(db, statements);
 }

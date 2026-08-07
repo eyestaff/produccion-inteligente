@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { APP_ROUTES, getPageTitle } from '../uiRoutes';
 import { useMemo, useState } from 'react';
+import { Search, Moon, Sun, ChevronRight, ChevronLeft, Menu, FileText } from 'lucide-react';
 
 interface AppShellProps {
   title?: string;
@@ -30,7 +31,7 @@ export function AppShell({ title }: AppShellProps) {
         </div>
 
         <button type="button" className="icon-button" onClick={() => setSidebarCollapsed((value) => !value)}>
-          {sidebarCollapsed ? '›' : '‹'}
+          {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </button>
 
         <nav className="sidebar__nav" aria-label="Navegación principal">
@@ -53,9 +54,13 @@ export function AppShell({ title }: AppShellProps) {
             <p className="eyebrow">Vista actual</p>
             <h2>{title ?? currentTitle}</h2>
           </div>
-          <div className="header__actions">
-            <button type="button" className="theme-toggle" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
-              {theme === 'light' ? 'Oscuro' : 'Claro'}
+          <div className="header__actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div className="search-bar" style={{ position: 'relative' }}>
+              <Search size={18} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
+              <input type="search" placeholder="Buscar..." style={{ padding: '0.5rem 1rem 0.5rem 2.5rem', borderRadius: '20px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }} />
+            </div>
+            <button type="button" className="theme-toggle icon-button" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+              {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
           </div>
         </header>

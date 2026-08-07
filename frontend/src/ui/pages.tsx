@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { fetchApi } from '../services/api';
 import { SkeletonRow } from './Skeleton';
 import { EmptyState, PageCard } from './components';
+import { useToast } from './ToastProvider';
+import { exportToCsv } from '../utils/csv';
 
 interface DashboardPayload {
   productionToday: number;
@@ -18,6 +20,8 @@ export function DashboardPage() {
   const navigate = useNavigate();
   const [data, setData] = useState<DashboardPayload | null>(null);
   const [loading, setLoading] = useState(true);
+  const [seeding, setSeeding] = useState(false);
+  const toast = useToast();
   const today = new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
   useEffect(() => {
@@ -29,6 +33,20 @@ export function DashboardPage() {
 
   const maxWeekly = data ? Math.max(...data.weeklyProduction, 1) : 1;
 
+  const handleSeed = async () => {
+    try {
+      setSeeding(true);
+      const res = await fetch('/api/demo/seed', { method: 'POST' });
+      if (!res.ok) throw new Error('Error al cargar datos');
+      toast('Datos de demostración generados correctamente', 'success');
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (e) {
+      toast('Error al generar datos', 'error');
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       {/* Welcome Header */}
@@ -38,6 +56,9 @@ export function DashboardPage() {
           <h2 style={{ margin: '0.25rem 0 0' }}>Centro de Operaciones</h2>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button onClick={handleSeed} disabled={seeding} style={{ padding: '0.5rem 1rem', background: 'var(--accent)', color: 'white', border: 'none', borderRadius: '4px', cursor: seeding ? 'not-allowed' : 'pointer', fontWeight: 500, opacity: seeding ? 0.7 : 1 }}>
+            {seeding ? 'Cargando...' : 'Cargar Datos Demo'}
+          </button>
           <button onClick={() => navigate('/production')} style={{ padding: '0.5rem 1rem', background: 'var(--text)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>
             Centro de Producción →
           </button>
@@ -149,11 +170,46 @@ export function RecipesPage() {
 }
 
 export function ConfigurationPage() {
+  const toast = useToast();
+  const [seeding, setSeeding] = useState(false);
+
+  const handleSeed = async () => {
+    if (!window.confirm('¿Seguro que quieres borrar los datos actuales de la empresa y generar un entorno de demostración?')) {
+      return;
+    }
+    setSeeding(true);
+    try {
+      await fetchApi('/demo/seed', { method: 'POST' });
+      toast('Datos demo generados correctamente. Recargando...', 'success');
+      setTimeout(() => window.location.reload(), 1500);
+    } catch (e: any) {
+      toast(e.message || 'Error al generar demo', 'error');
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   return (
-    <div className="page-grid">
-      <PageCard title="Preferencias" description="Ajuste de idioma, notificaciones y visualización." accent="#475569" />
-      <PageCard title="Integraciones" description="Conexiones futuras con sistemas de negocio y servicios externos." accent="#0ea5e9" />
-      <EmptyState title="Configuración inicial" description="Este espacio recoge los parámetros del sistema sin afectar la arquitectura actual." />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <div className="page-grid">
+        <PageCard title="Preferencias" description="Ajuste de idioma, notificaciones y visualización." accent="#475569" />
+        <PageCard title="Integraciones" description="Conexiones futuras con sistemas de negocio y servicios externos." accent="#0ea5e9" />
+        <EmptyState title="Configuración inicial" description="Este espacio recoge los parámetros del sistema sin afectar la arquitectura actual." />
+      </div>
+
+      <div style={{ background: 'white', borderRadius: '12px', padding: '1.5rem', border: '1px solid #fca5a5' }}>
+        <h3 style={{ margin: '0 0 0.5rem', color: '#991b1b' }}>Datos de Demostración (Seeding)</h3>
+        <p style={{ margin: '0 0 1rem', color: '#6b7280', fontSize: '0.9rem' }}>
+          Esta acción <strong>eliminará todos los datos de la empresa actual</strong> y generará un escenario completo de panadería (productos, recetas, inventario histórico y órdenes) para demostrar el sistema de Forecast.
+        </p>
+        <button 
+          onClick={handleSeed} 
+          disabled={seeding}
+          style={{ padding: '0.75rem 1.5rem', background: seeding ? '#fca5a5' : '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: seeding ? 'not-allowed' : 'pointer', fontWeight: 600 }}
+        >
+          {seeding ? 'Generando...' : '⚠️ Generar Datos Demo'}
+        </button>
+      </div>
     </div>
   );
 }
