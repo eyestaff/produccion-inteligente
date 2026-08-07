@@ -57,3 +57,24 @@ Este documento recoge todas las decisiones arquitectónicas permanentes del proy
 **Justificación**: Permite cálculos exactos de explosión de materiales sin forzar al usuario a calcular fracciones artificiales (ej. poner "0.012 kg de sal" para 1 pan, frente a "1.2 kg de sal" para una masa de 100 panes).
 **Consecuencias**: Los cálculos de deducción de inventario (`waste` / `orders`) deberán incluir siempre la fórmula `(target_quantity / yield_quantity) * item_quantity`.
 **Alternativas consideradas**: Forzar recetas unitarias (descartado por mala experiencia de usuario y pérdida de precisión en decimales).
+
+## ADR-008 Inventario como Ledger
+
+**Contexto**: El inventario requiere precisión absoluta y trazabilidad financiera/operativa.
+**Decisión**: El inventario será tratado como un Ledger. La tabla `inventory_transactions` será la única fuente oficial de verdad. La tabla `inventory` será únicamente una proyección optimizada (snapshot) para acelerar las consultas.
+**Justificación**: Garantiza la inmutabilidad y auditoría. Evita el fenómeno "caja negra" donde un stock cambia sin explicación.
+**Consecuencias**: NUNCA existirá una operación que modifique `inventory` sin generar simultáneamente un movimiento en `inventory_transactions`.
+
+## ADR-009 Trazabilidad Completa en Transacciones
+
+**Contexto**: Las auditorías de inventario necesitan respuestas precisas sobre cada discrepancia.
+**Decisión**: Toda transacción de inventario deberá responder siempre a: quién, cuándo, desde qué módulo, por qué motivo, sobre qué documento, sobre qué producto, sobre qué lote, sobre qué tienda y sobre qué empresa.
+**Justificación**: Elimina la opacidad y permite a la gerencia auditar robos, mermas o errores sistemáticos.
+**Consecuencias**: Las entidades transaccionales requerirán campos obligatorios de metadatos (created_by, reason, source_module, etc.). Ninguna operación podrá perder esta trazabilidad.
+
+## ADR-010 Diseño preparado para múltiples almacenes (Locations)
+
+**Contexto**: Actualmente cada tienda actúa como un almacén único, pero la empresa puede escalar a tener almacenes secos, cámaras de frío o almacenes centrales diferenciados por tienda.
+**Decisión**: El diseño del dominio (incluyendo IDs y relaciones) deberá soportar en el futuro varios almacenes por tienda, almacenes de producción y almacenes virtuales, aunque inicialmente se cree una relación 1:1 Tienda-Almacén.
+**Justificación**: Evita refactorizaciones catastróficas de bases de datos cuando el negocio expanda su estructura física.
+**Consecuencias**: La arquitectura debe permitir abstraer el `storeId` hacia un `locationId` en las tablas de inventario en futuras iteraciones.

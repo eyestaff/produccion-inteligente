@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 export const stores = sqliteTable('stores', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -61,15 +61,39 @@ export const recipeItems = sqliteTable('recipe_items', {
     .default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const inventory = sqliteTable('inventory', {
+export const inventory = sqliteTable(
+  'inventory',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    companyId: integer('company_id').references(() => companies.id),
+    storeId: integer('store_id').references(() => stores.id),
+    productId: integer('product_id').references(() => products.id),
+    quantity: integer('quantity').notNull().default(0),
+    reservedQuantity: integer('reserved_quantity').notNull().default(0),
+    availableQuantity: integer('available_quantity').notNull().default(0),
+    updatedAt: text('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    storeProductIdx: uniqueIndex('idx_inventory_store_product').on(table.storeId, table.productId),
+  }),
+);
+
+export const inventoryTransactions = sqliteTable('inventory_transactions', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   companyId: integer('company_id').references(() => companies.id),
   storeId: integer('store_id').references(() => stores.id),
   productId: integer('product_id').references(() => products.id),
-  quantity: integer('quantity').notNull().default(0),
-  reservedQuantity: integer('reserved_quantity').notNull().default(0),
-  availableQuantity: integer('available_quantity').notNull().default(0),
-  updatedAt: text('updated_at')
+  lotId: integer('lot_id'),
+  type: text('type').notNull(), // 'in', 'out', 'adjustment', 'production', 'reversion'
+  quantityChange: integer('quantity_change').notNull(),
+  reason: text('reason').notNull(), // 'production', 'caducity', 'breakage', 'adjustment', 'theft', 'return'
+  createdBy: integer('created_by').notNull(),
+  sourceModule: text('source_module').notNull(),
+  referenceType: text('reference_type'),
+  referenceId: integer('reference_id'),
+  createdAt: text('created_at')
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
 });
