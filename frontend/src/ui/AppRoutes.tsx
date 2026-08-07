@@ -6,6 +6,7 @@ import { ToastProvider } from './ToastProvider';
 import { ProductionDashboard } from '../pages/ProductionDashboard';
 import { InventoryDashboard } from '../pages/InventoryDashboard';
 import { InventoryLedger } from '../pages/InventoryLedger';
+import { PurchasingPage } from '../pages/PurchasingPage';
 import { getAuthToken } from '../services/api';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -24,6 +25,7 @@ export function AppRoutes() {
         <Route path="/production" element={<ProductionDashboard />} />
         <Route path="/inventory" element={<InventoryDashboard />} />
         <Route path="/inventory/:storeId/product/:productId" element={<InventoryLedger />} />
+        <Route path="/purchasing" element={<PurchasingPage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/recipes" element={<RecipesPage />} />
         <Route path="/configuration" element={<ConfigurationPage />} />

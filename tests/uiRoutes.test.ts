@@ -7,6 +7,7 @@ describe('ui routes', () => {
       '/dashboard',
       '/production',
       '/inventory',
+      '/purchasing',
       '/products',
       '/recipes',
       '/configuration',
