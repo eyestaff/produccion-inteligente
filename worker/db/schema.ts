@@ -41,6 +41,7 @@ export const recipes = sqliteTable('recipes', {
   companyId: integer('company_id').references(() => companies.id),
   productId: integer('product_id').references(() => products.id),
   name: text('name').notNull(),
+  yieldQuantity: integer('yield_quantity').notNull().default(1),
   version: integer('version').notNull().default(1),
   status: text('status').notNull().default('draft'),
   createdAt: text('created_at')

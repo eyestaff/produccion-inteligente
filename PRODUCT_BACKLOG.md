@@ -14,10 +14,10 @@ Este documento representa el backlog funcional completo del producto, alineado c
 
 ### EP-2: Core de Recetas e Inventario
 
-| ID     | Feature       | User Story                                                                  | Prioridad | Dependencias | Estado           | Sprint   |
-| ------ | ------------- | --------------------------------------------------------------------------- | --------- | ------------ | ---------------- | -------- |
-| US-201 | Recipes API   | Como gerente, quiero gestionar las recetas de mis productos (ingredientes). | Alta      | EP-1         | En Planificación | Sprint 6 |
-| US-202 | Inventory API | Como encargado, quiero registrar el inventario disponible de cada producto. | Alta      | US-201       | Pendiente        | Sprint 7 |
+| ID     | Feature       | User Story                                                                  | Prioridad | Dependencias | Estado     | Sprint   |
+| ------ | ------------- | --------------------------------------------------------------------------- | --------- | ------------ | ---------- | -------- |
+| US-201 | Recipes API   | Como gerente, quiero gestionar las recetas de mis productos (ingredientes). | Alta      | EP-1         | Completado | Sprint 6 |
+| US-202 | Inventory API | Como encargado, quiero registrar el inventario disponible de cada producto. | Alta      | US-201       | Pendiente  | Sprint 7 |
 
 ### EP-3: Motor de Producción
 

@@ -49,3 +49,11 @@ Este documento recoge todas las decisiones arquitectónicas permanentes del proy
 **Justificación**: Asegura un avance constante en funcionalidades de negocio mientras se reduce la deuda técnica incrementalmente.
 **Consecuencias**: Durante un periodo de transición coexistirán patrones antiguos y nuevos.
 **Alternativas consideradas**: Parar el desarrollo durante un sprint completo para refactorizar toda la aplicación.
+
+## ADR-007 Inclusión de Rendimiento por Lote en Recetas (Yield Quantity)
+
+**Contexto**: El diseño inicial de la tabla `recipes` asume implícitamente que la receta produce 1 unidad. En entornos industriales y panaderos, los escandallos se definen habitualmente por amasada o lote (ej. 1 receta de masa = 10 kg).
+**Decisión**: Modificar el esquema de base de datos para incluir obligatoriamente el campo `yield_quantity` en la entidad `recipes`.
+**Justificación**: Permite cálculos exactos de explosión de materiales sin forzar al usuario a calcular fracciones artificiales (ej. poner "0.012 kg de sal" para 1 pan, frente a "1.2 kg de sal" para una masa de 100 panes).
+**Consecuencias**: Los cálculos de deducción de inventario (`waste` / `orders`) deberán incluir siempre la fórmula `(target_quantity / yield_quantity) * item_quantity`.
+**Alternativas consideradas**: Forzar recetas unitarias (descartado por mala experiencia de usuario y pérdida de precisión en decimales).

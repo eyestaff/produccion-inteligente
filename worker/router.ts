@@ -8,6 +8,7 @@ import { handleAuthRoute } from './routes/auth.routes';
 import { handleStoresRoute } from './routes/stores.routes';
 import { handleBusinessLinesRoute } from './routes/business-lines.routes';
 import { handleProductsRoute } from './routes/products.routes';
+import { handleRecipesRoute } from './routes/recipes.routes';
 import { requireAuth } from './middlewares/auth.middleware';
 import { initializeDb } from './db';
 
@@ -51,6 +52,9 @@ export async function router(request: Request, env: Env): Promise<Response> {
   if (response) return response;
 
   response = await handleProductsRoute(pathname, request, env, authContext);
+  if (response) return response;
+
+  response = await handleRecipesRoute(pathname, request, env, authContext);
   if (response) return response;
 
   response = await handleRecordsRoute(pathname, request, env, authContext);

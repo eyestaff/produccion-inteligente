@@ -7862,3 +7862,11 @@ Ninguna decisión de diseño debe dificultar esta evolución (por ejemplo, omiti
 ---
 
 **Fin del documento**
+
+## Dominio: Recetas e Inventario
+
+Las **Recetas** (Recipes) representan los escandallos (Bill of Materials) para producir artículos.
+
+- Se ha incluido `yield_quantity` (Rendimiento por lote) para permitir escalar fórmulas a diferentes volúmenes sin pérdida de precisión.
+- Están compuestas por `recipe_items` (Ingredientes).
+- Mantienen estricto Multi-tenant y utilizan el `RequestContext` validado por sesión.
