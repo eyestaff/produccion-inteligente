@@ -6,6 +6,7 @@ import {
   upsertPurchaseRequest,
   updatePurchaseRequestStatus,
   setInventoryLevels,
+  discardPurchaseRequest,
 } from '../db/purchasing.repositories';
 
 export async function handlePurchasingRoute(
@@ -23,7 +24,6 @@ export async function handlePurchasingRoute(
   const db = env.DB;
 
   // GET /api/purchasing/:storeId/needs
-  // Returns auto-generated replenishment needs (no persistence, always fresh)
   const needsMatch = pathname.match(/^\/api\/purchasing\/(\d+)\/needs$/);
   if (needsMatch && method === 'GET') {
     try {
@@ -37,7 +37,7 @@ export async function handlePurchasingRoute(
     }
   }
 
-  // GET /api/purchasing/:storeId/requests
+  // GET/POST /api/purchasing/:storeId/requests
   const requestsListMatch = pathname.match(/^\/api\/purchasing\/(\d+)\/requests$/);
   if (requestsListMatch && method === 'GET') {
     try {
@@ -51,8 +51,6 @@ export async function handlePurchasingRoute(
     }
   }
 
-  // POST /api/purchasing/:storeId/requests
-  // Creates or updates a purchase request from the replenishment needs
   if (requestsListMatch && method === 'POST') {
     try {
       const storeId = parseInt(requestsListMatch[1], 10);
@@ -74,13 +72,28 @@ export async function handlePurchasingRoute(
     }
   }
 
-  // PATCH /api/purchasing/requests/:id
+  // PATCH /api/purchasing/requests/:id  (status update: bought, postponed, pending)
   const patchMatch = pathname.match(/^\/api\/purchasing\/requests\/(\d+)$/);
   if (patchMatch && method === 'PATCH') {
     try {
       const requestId = parseInt(patchMatch[1], 10);
       const body = await request.json<any>();
       await updatePurchaseRequestStatus(db, ctx, requestId, body.status, body.notes);
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (e: any) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+    }
+  }
+
+  // POST /api/purchasing/requests/:id/discard  (audit trail)
+  const discardMatch = pathname.match(/^\/api\/purchasing\/requests\/(\d+)\/discard$/);
+  if (discardMatch && method === 'POST') {
+    try {
+      const requestId = parseInt(discardMatch[1], 10);
+      const body = await request.json<any>();
+      await discardPurchaseRequest(db, ctx, requestId, body.reason);
       return new Response(JSON.stringify({ ok: true }), {
         headers: { 'Content-Type': 'application/json' },
       });
