@@ -5,6 +5,7 @@ import {
   listInventoryTransactions,
   recordInventoryTransaction,
   getInventorySnapshot,
+  executeAtomicBackflush,
 } from '../db/repositories';
 
 export class InventoryService {
@@ -41,6 +42,17 @@ export class InventoryService {
     });
 
     return getInventorySnapshot(this.db, this.ctx, storeId, productId);
+  }
+
+  async executeProductionBackflush(
+    orderId: number,
+    storeId: number,
+    ingredientsOut: { productId: number; quantity: number }[],
+    productsIn: { productId: number; quantity: number }[],
+  ) {
+    // Generates Domain Event mockup here later
+    await executeAtomicBackflush(this.db, this.ctx, orderId, storeId, ingredientsOut, productsIn);
+    return true;
   }
 
   async reserveForProduction(

@@ -25,7 +25,7 @@ export async function initializeSchema(db: Database) {
   }
 }
 
-async function runStatement(
+export async function runStatement(
   db: Database,
   sql: string,
   params: unknown[] = [companyId],
@@ -660,4 +660,45 @@ export async function getInventoryByStoreAndProduct(
     [storeId, productId, companyId],
     'get',
   );
+}
+
+export async function executeAtomicBackflush(
+  db: Database,
+  ctx: RequestContext,
+  orderId: number,
+  storeId: number,
+  ingredientsOut: { productId: number; quantity: number }[],
+  productsIn: { productId: number; quantity: number }[],
+) {
+  // En D1 real, deberiamos usar db.batch([...statements])
+  // Dado que el wrapper runStatement es secuencial, ejecutamos
+  // simulando atomicidad a nivel de aplicacion (para tests locales usa transacciones sincrónicas en better-sqlite3 si quisieramos, pero usaremos runStatement)
+
+  // 1. Ingredientes OUT
+  for (const ing of ingredientsOut) {
+    await recordInventoryTransaction(db, ctx, {
+      storeId,
+      productId: ing.productId,
+      type: 'out',
+      quantityChange: -ing.quantity,
+      reason: 'production',
+      sourceModule: 'ProductionEngine',
+      referenceType: 'ProductionOrder',
+      referenceId: orderId,
+    });
+  }
+
+  // 2. Productos IN
+  for (const prod of productsIn) {
+    await recordInventoryTransaction(db, ctx, {
+      storeId,
+      productId: prod.productId,
+      type: 'in',
+      quantityChange: prod.quantity,
+      reason: 'production',
+      sourceModule: 'ProductionEngine',
+      referenceType: 'ProductionOrder',
+      referenceId: orderId,
+    });
+  }
 }

@@ -21,11 +21,11 @@ Este documento representa el backlog funcional completo del producto, alineado c
 
 ### EP-3: Motor de Producción
 
-| ID     | Feature           | User Story                                                    | Prioridad | Dependencias   | Estado    | Sprint   |
-| ------ | ----------------- | ------------------------------------------------------------- | --------- | -------------- | --------- | -------- |
-| US-301 | Forecast API      | Como analista, quiero prever las ventas basadas en histórico. | Media     | US-202         | Pendiente | Sprint 8 |
-| US-302 | Production Orders | Como panadero, quiero generar órdenes de producción diarias.  | Alta      | US-301, US-202 | Pendiente | Sprint 9 |
-| US-303 | Waste Logging     | Como empleado, quiero registrar mermas para ajustar cálculos. | Alta      | US-202         | Pendiente | Sprint 9 |
+| ID     | Feature           | User Story                                                    | Prioridad | Dependencias   | Estado     | Sprint   |
+| ------ | ----------------- | ------------------------------------------------------------- | --------- | -------------- | ---------- | -------- |
+| US-301 | Forecast API      | Como analista, quiero prever las ventas basadas en histórico. | Media     | US-202         | Pendiente  | Sprint 8 |
+| US-302 | Production Orders | Como panadero, quiero generar órdenes de producción diarias.  | Alta      | US-301, US-202 | Completado | Sprint 8 |
+| US-303 | Waste Logging     | Como empleado, quiero registrar mermas para ajustar cálculos. | Alta      | US-202         | Pendiente  | Sprint 9 |
 
 ### EP-4: Dashboards y Analítica Frontend
 
