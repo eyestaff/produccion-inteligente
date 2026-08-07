@@ -126,7 +126,7 @@ export async function seedDemoData(db: Database, ctx: RequestContext): Promise<v
     massInsertStatements.push(
       buildStatement(
         db,
-        `INSERT INTO inventory_transactions (company_id, store_id, product_id, quantity_change, type, reason, created_at) VALUES (?, ?, ?, ?, 'out', 'production', ?)`,
+        `INSERT INTO inventory_transactions (company_id, store_id, product_id, quantity_change, type, reason, created_by, source_module, created_at) VALUES (?, ?, ?, ?, 'out', 'production', 1, 'Seed', ?)`,
         [cid, storeId, prodIds['ING-HAR'], -qtyHar, dateStr],
       ),
     );
@@ -135,7 +135,7 @@ export async function seedDemoData(db: Database, ctx: RequestContext): Promise<v
     massInsertStatements.push(
       buildStatement(
         db,
-        `INSERT INTO inventory_transactions (company_id, store_id, product_id, quantity_change, type, reason, created_at) VALUES (?, ?, ?, ?, 'out', 'production', ?)`,
+        `INSERT INTO inventory_transactions (company_id, store_id, product_id, quantity_change, type, reason, created_by, source_module, created_at) VALUES (?, ?, ?, ?, 'out', 'production', 1, 'Seed', ?)`,
         [cid, storeId, prodIds['PROD-CRO'], -qtyCro, dateStr],
       ),
     );
@@ -143,7 +143,7 @@ export async function seedDemoData(db: Database, ctx: RequestContext): Promise<v
     massInsertStatements.push(
       buildStatement(
         db,
-        `INSERT INTO inventory_transactions (company_id, store_id, product_id, quantity_change, type, reason, created_at) VALUES (?, ?, ?, ?, 'out', 'production', ?)`,
+        `INSERT INTO inventory_transactions (company_id, store_id, product_id, quantity_change, type, reason, created_by, source_module, created_at) VALUES (?, ?, ?, ?, 'out', 'production', 1, 'Seed', ?)`,
         [cid, storeId, prodIds['PROD-PAN'], -qtyPan, dateStr],
       ),
     );
@@ -156,7 +156,7 @@ export async function seedDemoData(db: Database, ctx: RequestContext): Promise<v
   yesterday.setDate(yesterday.getDate() - 1);
   await runStatement(
     db,
-    `INSERT INTO inventory_transactions (company_id, store_id, product_id, quantity_change, type, reason, created_at) VALUES (?, ?, ?, -5, 'out', 'breakage', ?)`,
+    `INSERT INTO inventory_transactions (company_id, store_id, product_id, quantity_change, type, reason, created_by, source_module, created_at) VALUES (?, ?, ?, -5, 'out', 'breakage', 1, 'Seed', ?)`,
     [cid, storeId, prodIds['ING-SAL'], yesterday.toISOString()],
   );
 

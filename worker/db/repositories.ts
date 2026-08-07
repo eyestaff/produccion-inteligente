@@ -34,17 +34,18 @@ export async function runStatement(
   const statement = db.prepare(sql);
   const isD1Statement =
     typeof statement.bind === 'function' && typeof statement.first === 'function';
+  let boundStatement = statement;
   if (isD1Statement) {
     if (params.length > 0) {
-      statement.bind(...params);
+      boundStatement = (statement.bind as any)(...params);
     }
     if (mode === 'get') {
-      return statement.first ? await statement.first() : undefined;
+      return boundStatement.first ? await boundStatement.first() : undefined;
     }
     if (mode === 'all') {
-      return statement.all ? await statement.all() : [];
+      return boundStatement.all ? await boundStatement.all() : [];
     }
-    return statement.run ? await statement.run() : undefined;
+    return boundStatement.run ? await boundStatement.run() : undefined;
   }
 
   if (mode === 'get') {
