@@ -2,7 +2,7 @@ import type { Env } from '../index';
 import type { RequestContext } from '../models/context';
 import { getForecastContext, saveForecast, getForecastHistory } from '../db/forecast.provider';
 import { generateForecast } from '../engine/forecast.engine';
-import { createProductionOrder, createProductionOrderItem } from '../db/repositories';
+import { ProductionService } from '../services/production.service';
 
 export async function handleForecastRoute(
   pathname: string,
@@ -51,22 +51,33 @@ export async function handleForecastRoute(
       // 1. Save Forecast Plan
       const forecastId = await saveForecast(db, ctx, storeId, targetDate, items);
 
-      // 2. Generate Production Orders for 'produce' items
-      for (const item of items) {
-        if (item.type === 'produce' && item.adjustedQuantity > 0) {
-          // Creación simplificada: 1 orden por producto. En un sistema más complejo se agruparían.
-          const po = await createProductionOrder(db, ctx, {
-            storeId,
-            targetQuantity: item.adjustedQuantity,
-            status: 'planned',
-          });
-          const poId = (po as any).id;
-          if (poId) {
-            await createProductionOrderItem(db, ctx, {
-              productionOrderId: poId,
-              productId: item.productId,
-              quantity: item.adjustedQuantity,
-            });
+      // 2. Generate Production Orders via ProductionService (ensures BOM snapshot is created)
+      const productionService = new ProductionService(db as any, ctx);
+
+      // Group 'produce' items that have an adjusted quantity > 0
+      const produceItems = items.filter(
+        (item: any) => item.type === 'produce' && item.adjustedQuantity > 0,
+      );
+
+      if (produceItems.length > 0) {
+        // Attempt to create one order per product. Catch NO_ACTIVE_RECIPE errors gracefully.
+        for (const item of produceItems) {
+          try {
+            await productionService.planOrder(storeId, 1, [
+              {
+                // businessLineId=1 as default; future: derive from product
+                productId: item.productId,
+                quantity: item.adjustedQuantity,
+              },
+            ]);
+          } catch (e: any) {
+            // If no active recipe exists for this product, skip silently (buy items dont need recipes)
+            if (!e.message.startsWith('NO_ACTIVE_RECIPE')) {
+              throw e;
+            }
+            console.warn(
+              `[Forecast] Skipping production order for product ${item.productId}: ${e.message}`,
+            );
           }
         }
       }
