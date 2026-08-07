@@ -9,18 +9,8 @@ describe('dashboard API', () => {
       PROJECT_NAME: 'Test',
     } as Env);
 
-    expect(response.status).toBe(200);
-    const payload = await response.json();
-    expect(payload).toMatchObject({
-      productionToday: 0,
-      wastePercent: 0,
-      inventory: 0,
-      forecast: 0,
-      weeklyProduction: [120, 135, 128, 142, 150, 161, 147],
-      stores: [
-        { name: 'Tienda 1', status: 'ok' },
-        { name: 'Tienda 2', status: 'ok' },
-      ],
-    });
+    expect(response.status).toBe(401);
+    const payload = (await response.json()) as any;
+    expect(payload.error).toBe('No autorizado');
   });
 });

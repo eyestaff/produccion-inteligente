@@ -100,3 +100,25 @@ export const wasteRecords = sqliteTable('waste_records', {
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const users = sqliteTable('users', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  email: text('email').notNull().unique(),
+  passwordHash: text('password_hash').notNull(),
+  passwordSalt: text('password_salt').notNull(),
+  role: text('role').notNull().default('user'),
+  status: text('status').notNull().default('active'),
+  createdAt: text('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const sessions = sqliteTable('sessions', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: integer('user_id').references(() => users.id),
+  token: text('token').notNull().unique(),
+  expiresAt: integer('expires_at').notNull(),
+  createdAt: text('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+});

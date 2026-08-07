@@ -4,6 +4,8 @@ import { handlePwaRoute } from './routes/pwa.routes';
 import { handleDashboardRoute } from './routes/dashboard';
 import { handleRecordsRoute } from './routes/records.routes';
 import { handleAssetsRoute } from './routes/assets.routes';
+import { handleAuthRoute } from './routes/auth.routes';
+import { requireAuth } from './middlewares/auth.middleware';
 import { initializeDb } from './db';
 
 export async function router(request: Request, env: Env): Promise<Response> {
@@ -14,6 +16,21 @@ export async function router(request: Request, env: Env): Promise<Response> {
 
   response = await handleHealthRoute(pathname, request, env);
   if (response) return response;
+
+  response = await handleAuthRoute(pathname, request, env);
+  if (response) return response;
+
+  // Protect API routes except auth
+  if (
+    pathname.startsWith('/api/') &&
+    pathname !== '/api/auth/login' &&
+    pathname !== '/api/auth/logout'
+  ) {
+    const authResult = await requireAuth(request, env);
+    if (authResult.errorResponse) {
+      return authResult.errorResponse;
+    }
+  }
 
   response = await handleDashboardRoute(pathname, request, env);
   if (response) return response;
