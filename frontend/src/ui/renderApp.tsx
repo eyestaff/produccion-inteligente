@@ -16,6 +16,7 @@ export function renderAppToHtml(pathname: string): string {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Producción inteligente</title>
     <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="stylesheet" href="/assets/ui-app.css" />
     <style>
       :root {
         color-scheme: light;
@@ -60,6 +61,7 @@ export function renderAppToHtml(pathname: string): string {
   </head>
   <body>
     <div id="root">${appMarkup}</div>
+    <script type="module" src="/assets/ui-entry.js"></script>
   </body>
 </html>`;
 }
