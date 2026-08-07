@@ -13,6 +13,7 @@ import { handleInventoryRoute } from './routes/inventory.routes';
 import { handleProductionRoute } from './routes/production.routes';
 import { handlePurchasingRoute } from './routes/purchasing.routes';
 import { handleForecastRoute } from './routes/forecast.routes';
+import { handleWasteRoute } from './routes/waste.routes';
 import { handleDemoRoute } from './routes/demo.routes';
 import { requireAuth } from './middlewares/auth.middleware';
 import { initializeDb } from './db';
@@ -74,6 +75,9 @@ export async function router(request: Request, env: Env): Promise<Response> {
     if (response) return logAndReturn(response, startTime, method, pathname, authContext);
 
     response = await handleForecastRoute(pathname, request, env, authContext);
+    if (response) return logAndReturn(response, startTime, method, pathname, authContext);
+
+    response = await handleWasteRoute(pathname, request, env, authContext);
     if (response) return logAndReturn(response, startTime, method, pathname, authContext);
 
     response = await handleRecordsRoute(pathname, request, env, authContext);

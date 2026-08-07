@@ -8,6 +8,7 @@ import { InventoryDashboard } from '../pages/InventoryDashboard';
 import { InventoryLedger } from '../pages/InventoryLedger';
 import { PurchasingPage } from '../pages/PurchasingPage';
 import { ForecastDashboard } from '../pages/ForecastDashboard';
+import { WasteDashboard } from '../pages/WasteDashboard';
 import { getAuthToken } from '../services/api';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -33,6 +34,7 @@ export function AppRoutes() {
         <Route path="/inventory" element={<InventoryDashboard />} />
         <Route path="/inventory/:storeId/product/:productId" element={<InventoryLedger />} />
         <Route path="/purchasing" element={<PurchasingPage />} />
+        <Route path="/waste" element={<WasteDashboard />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/recipes" element={<RecipesPage />} />
         <Route path="/configuration" element={<ConfigurationPage />} />

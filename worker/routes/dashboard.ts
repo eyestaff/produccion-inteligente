@@ -38,7 +38,7 @@ export async function handleDashboardRoute(
       `SELECT COALESCE(SUM(ABS(quantity_change)),0) as total
        FROM inventory_transactions
        WHERE company_id = ? AND type = 'out'
-       AND reason IN ('breakage','caducity','theft')
+       AND reason IN ('caducity', 'overproduction', 'error', 'breakage', 'quality', 'other', 'theft')
        AND DATE(created_at) = DATE('now')`,
       [cid],
       'get',
