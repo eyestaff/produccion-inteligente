@@ -19,10 +19,7 @@ export class AssetsService {
       : `company_${this.ctx.companyId}/`;
     const res = await listAssets(this.bucket, prefixQuery, page, limit);
     // strip the prefix from the returned keys for client convenience
-    const strippedAssets = res.assets.map((a) => ({
-      ...a,
-      key: a.key.replace(`company_${this.ctx.companyId}/`, ''),
-    }));
+    const strippedAssets = res.assets.map((a) => a.replace(`company_${this.ctx.companyId}/`, ''));
     return { ...res, assets: strippedAssets };
   }
 

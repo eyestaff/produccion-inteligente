@@ -41,6 +41,17 @@ export class ProductionService {
     if (!order) throw new Error('NOT_FOUND');
     if (order.status !== 'planned') throw new Error('ORDER_NOT_PLANNED');
 
+    // Reserva de Inventario
+    const prepSheet = await this.getPrepSheet(orderId);
+    for (const ing of prepSheet.ingredients) {
+      await this.inventoryService.reserveForProduction(
+        order.storeId,
+        ing.productId,
+        ing.quantity,
+        orderId,
+      );
+    }
+
     await updateProductionOrderStatus(this.db, this.ctx, orderId, 'in_progress');
     return this.get(orderId);
   }
@@ -98,7 +109,45 @@ export class ProductionService {
     return order;
   }
 
-  async completeOrder(orderId: number) {
+  async getPrepSheet(orderId: number) {
+    const order = await getProductionOrder(this.db, this.ctx, orderId);
+    if (!order) throw new Error('NOT_FOUND');
+
+    const ingredientsOut: {
+      productId: number;
+      productName: string;
+      quantity: number;
+      unit: string;
+    }[] = [];
+
+    for (const item of order.items) {
+      const recipes = await this.recipesService.list(item.productId);
+      const activeRecipeMeta = recipes.find((r: any) => r.status === 'active');
+      if (!activeRecipeMeta) throw new Error(`NO_ACTIVE_RECIPE_FOR_PRODUCT_${item.productId}`);
+
+      const activeRecipe = await this.recipesService.get(activeRecipeMeta.id);
+      const factor = item.quantity / activeRecipe.yieldQuantity;
+
+      for (const ing of activeRecipe.items) {
+        const requiredQty = Math.ceil(factor * ing.quantity);
+        const existingOut = ingredientsOut.find((x) => x.productId === ing.productId);
+        if (existingOut) {
+          existingOut.quantity += requiredQty;
+        } else {
+          ingredientsOut.push({
+            productId: ing.productId,
+            productName: ing.productName || 'Ingrediente',
+            quantity: requiredQty,
+            unit: ing.unit || 'uds',
+          });
+        }
+      }
+    }
+
+    return { orderId: order.id, ingredients: ingredientsOut };
+  }
+
+  async completeOrder(orderId: number, actualQuantity?: number, wasteQuantity?: number) {
     const order = await getProductionOrder(this.db, this.ctx, orderId);
     if (!order) throw new Error('NOT_FOUND');
     if (order.status === 'completed' || order.status === 'cancelled') {
@@ -108,7 +157,17 @@ export class ProductionService {
     const ingredientsOut: { productId: number; quantity: number }[] = [];
     const productsIn: { productId: number; quantity: number }[] = [];
 
-    // Orquestación: Recetas + Explosión
+    // Si no pasan actualQuantity, asumimos la meta
+    const finalQuantity = actualQuantity !== undefined ? actualQuantity : order.targetQuantity;
+    const finalWaste = wasteQuantity || 0;
+
+    // Orquestación: Recetas + Explosión basada en lo REALMENTE planificado vs usado
+    // Nota: Por simplicidad del MVP, el consumo de materia prima se asume según la receta original,
+    // o se puede hacer proporcional al finalQuantity + finalWaste.
+    // Usaremos el total planificado originalmente para los ingredientes (o lo que dictamina la receta).
+    // Si el usuario reporta mermas, eso se debió haber gastado en ingredientes igual.
+    const productionFactor = (finalQuantity + finalWaste) / order.targetQuantity;
+
     for (const item of order.items) {
       const recipes = await this.recipesService.list(item.productId);
       const activeRecipeMeta = recipes.find((r: any) => r.status === 'active');
@@ -116,8 +175,9 @@ export class ProductionService {
 
       const activeRecipe = await this.recipesService.get(activeRecipeMeta.id);
 
-      // Explosion de materiales: (target_quantity / yield_quantity) * item.quantity
-      const factor = item.quantity / activeRecipe.yieldQuantity;
+      // Usar la cantidad ajustada por factor de producción real
+      const adjustedItemQuantity = item.quantity * productionFactor;
+      const factor = adjustedItemQuantity / activeRecipe.yieldQuantity;
 
       for (const ing of activeRecipe.items) {
         const requiredQty = Math.ceil(factor * ing.quantity); // Integer arithmetic
@@ -130,7 +190,11 @@ export class ProductionService {
         }
       }
 
-      productsIn.push({ productId: item.productId, quantity: item.quantity });
+      // El producto final solo suma lo finalQuantity
+      productsIn.push({
+        productId: item.productId,
+        quantity: Math.ceil(item.quantity * (finalQuantity / order.targetQuantity)),
+      });
     }
 
     // Orquestación: Inventario (Atomic Backflush)
@@ -141,11 +205,25 @@ export class ProductionService {
       productsIn,
     );
 
+    // Registrar mermas de producto final si hubo
+    if (finalWaste > 0 && productsIn.length > 0) {
+      // Tomamos el producto principal (simplificación para MVP)
+      await this.inventoryService.createTransaction({
+        storeId: order.storeId,
+        productId: productsIn[0].productId,
+        type: 'out',
+        quantityChange: -finalWaste,
+        reason: 'breakage',
+      });
+    }
+
     // Finalización
-    await updateProductionOrderStatus(this.db, this.ctx, orderId, 'completed');
+    await updateProductionOrderStatus(this.db, this.ctx, orderId, 'completed', finalQuantity);
 
     // Domain Event mock
-    console.log(`[EVENT] ProductionOrderCompleted: ${orderId}`);
+    console.log(
+      `[EVENT] ProductionOrderCompleted: ${orderId} | Actual: ${finalQuantity} | Waste: ${finalWaste}`,
+    );
 
     return this.get(orderId);
   }
@@ -155,6 +233,19 @@ export class ProductionService {
     if (!order) throw new Error('NOT_FOUND');
     if (order.status === 'completed' || order.status === 'cancelled') {
       throw new Error('ORDER_ALREADY_CLOSED');
+    }
+
+    // Si estaba en progreso, hay que liberar la reserva
+    if (order.status === 'in_progress') {
+      const prepSheet = await this.getPrepSheet(orderId);
+      for (const ing of prepSheet.ingredients) {
+        await this.inventoryService.releaseFromProduction(
+          order.storeId,
+          ing.productId,
+          ing.quantity,
+          orderId,
+        );
+      }
     }
 
     await updateProductionOrderStatus(this.db, this.ctx, orderId, 'cancelled');

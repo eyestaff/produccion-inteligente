@@ -11,7 +11,12 @@ import { ForecastDashboard } from '../pages/ForecastDashboard';
 import { getAuthToken } from '../services/api';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  if (!getAuthToken()) return <Navigate to="/login" replace />;
+  if (!getAuthToken()) {
+    if (typeof window === 'undefined') {
+      return <LoginPage />;
+    }
+    return <Navigate to="/login" replace />;
+  }
   return <>{children}</>;
 }
 

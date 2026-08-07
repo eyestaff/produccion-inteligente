@@ -105,6 +105,7 @@ export const productionOrders = sqliteTable('production_orders', {
   businessLineId: integer('business_line_id').references(() => businessLines.id),
   status: text('status').notNull().default('planned'),
   targetQuantity: integer('target_quantity').notNull().default(0),
+  actualQuantity: integer('actual_quantity').notNull().default(0),
   startedAt: text('started_at'),
   completedAt: text('completed_at'),
   createdAt: text('created_at')

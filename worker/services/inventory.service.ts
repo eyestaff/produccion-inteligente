@@ -76,4 +76,50 @@ export class InventoryService {
     });
     return getInventorySnapshot(this.db, this.ctx, storeId, productId);
   }
+
+  async releaseFromProduction(
+    storeId: number,
+    productId: number,
+    quantity: number,
+    orderId: number,
+  ) {
+    if (quantity <= 0) throw new Error('INVALID_QUANTITY');
+
+    await recordInventoryTransaction(this.db, this.ctx, {
+      storeId,
+      productId,
+      type: 'adjustment',
+      quantityChange: -quantity, // Negative to reduce reservation
+      reason: 'production',
+      sourceModule: 'ProductionEngine',
+      referenceType: 'ProductionOrder',
+      referenceId: orderId,
+      isReserveOnly: true,
+    });
+    return getInventorySnapshot(this.db, this.ctx, storeId, productId);
+  }
+
+  // Se usa para compras
+  async createTransaction(input: {
+    storeId: number;
+    productId: number;
+    type: 'in' | 'out' | 'adjustment';
+    quantityChange: number;
+    reason: string;
+    sourceModule?: string;
+    referenceType?: string;
+    referenceId?: number;
+  }) {
+    await recordInventoryTransaction(this.db, this.ctx, {
+      storeId: input.storeId,
+      productId: input.productId,
+      type: input.type,
+      quantityChange: input.quantityChange,
+      reason: input.reason,
+      sourceModule: input.sourceModule || 'ManualAdjustment',
+      referenceType: input.referenceType,
+      referenceId: input.referenceId,
+    });
+    return getInventorySnapshot(this.db, this.ctx, input.storeId, input.productId);
+  }
 }

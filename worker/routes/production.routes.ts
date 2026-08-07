@@ -104,11 +104,35 @@ export async function handleProductionRoute(
     }
   }
 
+  // GET /api/production/orders/:id/prep-sheet
+  const prepMatch = pathname.match(/^\/api\/production\/orders\/(\d+)\/prep-sheet$/);
+  if (prepMatch && method === 'GET') {
+    try {
+      const sheet = await service.getPrepSheet(parseInt(prepMatch[1], 10));
+      return new Response(JSON.stringify(sheet), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (e: any) {
+      if (e.message === 'NOT_FOUND') return new Response(null, { status: 404 });
+      return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+    }
+  }
+
   // POST /api/production/orders/:id/complete
   const completeMatch = pathname.match(/^\/api\/production\/orders\/(\d+)\/complete$/);
   if (completeMatch && method === 'POST') {
     try {
-      const order = await service.completeOrder(parseInt(completeMatch[1], 10));
+      let body: any = {};
+      try {
+        body = await request.json();
+      } catch (e) {
+        // body might be empty
+      }
+      const order = await service.completeOrder(
+        parseInt(completeMatch[1], 10),
+        body.actualQuantity,
+        body.wasteQuantity,
+      );
       return new Response(JSON.stringify(order), {
         headers: { 'Content-Type': 'application/json' },
       });

@@ -1,4 +1,4 @@
-import type { Database } from './db';
+import type { Database } from './repositories';
 import type { RequestContext } from '../models/context';
 import { runStatement } from './repositories';
 
@@ -42,7 +42,7 @@ export async function addProductionOrderItem(
 export async function getProductionOrder(db: Database, ctx: RequestContext, orderId: number) {
   const order = await runStatement(
     db,
-    'SELECT id, store_id AS storeId, business_line_id AS businessLineId, target_quantity AS targetQuantity, status FROM production_orders WHERE id = ? AND company_id = ?',
+    'SELECT id, store_id AS storeId, business_line_id AS businessLineId, target_quantity AS targetQuantity, actual_quantity AS actualQuantity, status FROM production_orders WHERE id = ? AND company_id = ?',
     [orderId, ctx.companyId],
     'get',
   );
@@ -63,11 +63,18 @@ export async function updateProductionOrderStatus(
   ctx: RequestContext,
   orderId: number,
   status: 'planned' | 'in_progress' | 'completed' | 'cancelled',
+  actualQuantity?: number,
 ) {
   const timeField =
     status === 'in_progress' ? 'started_at' : status === 'completed' ? 'completed_at' : null;
 
-  if (timeField) {
+  if (timeField && actualQuantity !== undefined) {
+    await runStatement(
+      db,
+      `UPDATE production_orders SET status = ?, actual_quantity = ?, ${timeField} = CURRENT_TIMESTAMP WHERE id = ? AND company_id = ?`,
+      [status, actualQuantity, orderId, ctx.companyId],
+    );
+  } else if (timeField) {
     await runStatement(
       db,
       `UPDATE production_orders SET status = ?, ${timeField} = CURRENT_TIMESTAMP WHERE id = ? AND company_id = ?`,
@@ -87,7 +94,7 @@ export async function listProductionOrders(db: Database, ctx: RequestContext) {
   const orders = (await runStatement(
     db,
     `SELECT po.id, po.store_id AS storeId, s.name AS storeName, po.business_line_id AS businessLineId,
-     po.target_quantity AS targetQuantity, po.status,
+     po.target_quantity AS targetQuantity, po.actual_quantity AS actualQuantity, po.status,
      po.started_at AS startedAt, po.completed_at AS completedAt, po.created_at AS createdAt
      FROM production_orders po
      LEFT JOIN stores s ON po.store_id = s.id
