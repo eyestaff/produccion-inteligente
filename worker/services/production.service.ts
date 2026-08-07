@@ -7,6 +7,8 @@ import {
   addProductionOrderItem,
   getProductionOrder,
   updateProductionOrderStatus,
+  listProductionOrders,
+  updateProductionOrder,
 } from '../db/production.repositories';
 
 export class ProductionService {
@@ -19,6 +21,42 @@ export class ProductionService {
   ) {
     this.recipesService = new RecipesService(db, ctx);
     this.inventoryService = new InventoryService(db, ctx);
+  }
+
+  async listOrders() {
+    return listProductionOrders(this.db, this.ctx);
+  }
+
+  async editOrder(orderId: number, data: { targetQuantity: number }) {
+    const order = await getProductionOrder(this.db, this.ctx, orderId);
+    if (!order) throw new Error('NOT_FOUND');
+    if (order.status !== 'planned') throw new Error('ORDER_ALREADY_STARTED');
+
+    await updateProductionOrder(this.db, this.ctx, orderId, data);
+    return this.get(orderId);
+  }
+
+  async startOrder(orderId: number) {
+    const order = await getProductionOrder(this.db, this.ctx, orderId);
+    if (!order) throw new Error('NOT_FOUND');
+    if (order.status !== 'planned') throw new Error('ORDER_NOT_PLANNED');
+
+    await updateProductionOrderStatus(this.db, this.ctx, orderId, 'in_progress');
+    return this.get(orderId);
+  }
+
+  async getDashboardKPIs() {
+    const orders: any[] = (await this.listOrders()) || [];
+    const planned = orders.filter((o) => o.status === 'planned').length;
+    const inProgress = orders.filter((o) => o.status === 'in_progress').length;
+    const completed = orders.filter((o) => o.status === 'completed').length;
+
+    return {
+      planned,
+      inProgress,
+      completed,
+      alerts: [], // Mocks for now, can be populated by scanning inventory
+    };
   }
 
   async planOrder(

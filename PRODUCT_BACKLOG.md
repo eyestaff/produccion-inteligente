@@ -39,3 +39,9 @@ Este documento representa el backlog funcional completo del producto, alineado c
 | ID     | Feature       | User Story                                                        | Prioridad | Dependencias | Estado    | Sprint    |
 | ------ | ------------- | ----------------------------------------------------------------- | --------- | ------------ | --------- | --------- |
 | US-501 | Predicción IA | Como sistema, quiero ajustar el forecast dinámicamente usando IA. | Baja      | EP-3         | Pendiente | Sprint 12 |
+
+### EP-6: Deuda Técnica Arquitectónica
+
+| ID       | Feature                | Requisito Técnico Obligatorio                                                               | Prioridad | Triggers Limitantes                             | Estado    | Sprint   |
+| -------- | ---------------------- | ------------------------------------------------------------------------------------------- | --------- | ----------------------------------------------- | --------- | -------- |
+| TECH-001 | Migración D1 Batch API | Refactorizar capa de repositorios para garantizar atomicidad pura de DB en el backflushing. | Crítica   | >25 tiendas, >10k órdenes, o liberación de v2.0 | Pendiente | Pre-v2.0 |

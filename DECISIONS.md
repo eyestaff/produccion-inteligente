@@ -78,3 +78,14 @@ Este documento recoge todas las decisiones arquitectónicas permanentes del proy
 **Decisión**: El diseño del dominio (incluyendo IDs y relaciones) deberá soportar en el futuro varios almacenes por tienda, almacenes de producción y almacenes virtuales, aunque inicialmente se cree una relación 1:1 Tienda-Almacén.
 **Justificación**: Evita refactorizaciones catastróficas de bases de datos cuando el negocio expanda su estructura física.
 **Consecuencias**: La arquitectura debe permitir abstraer el `storeId` hacia un `locationId` en las tablas de inventario en futuras iteraciones.
+
+## ADR-011 Migración obligatoria a D1 Batch
+
+**Contexto**: El Motor de Producción actual ejecuta el _Backflushing Atómico_ utilizando sentencias secuenciales mediante el wrapper genérico de D1 (`runStatement`). Esto presenta un riesgo de inconsistencia logística si el proceso del Worker es interrumpido abruptamente (timeout, fallo de red).
+**Decisión**: Aprobar temporalmente la ejecución secuencial para la V1 en pro de la agilidad, con el compromiso obligatorio de migrar a una ejecución transaccional pura mediante `db.batch()`.
+**Justificación**: Mantener la simplicidad inicial mientras no se opere a volúmenes industriales, pero sin ignorar la falta de atomicidad pura a nivel de base de datos.
+**Consecuencias**: Queda terminantemente prohibido avanzar a la versión 2.0 del sistema sin haber refactorizado la capa de repositorios para soportar `db.batch()`. La migración deberá gatillarse ineludiblemente si se alcanza alguna de las siguientes condiciones:
+
+- Se superan 25 tiendas activas.
+- Se superan 10.000 órdenes de producción mensuales.
+- Se incorpora producción concurrente masiva desde múltiples dispositivos.

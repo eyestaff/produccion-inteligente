@@ -64,10 +64,11 @@ Ningún Sprint podrá darse por cerrado sin haber ejecutado y superado exitosame
 
 Toda deuda técnica deberá estar:
 
-- Documentada y registrada.
+- Documentada y registrada formalmente (ej. en `DECISIONS.md` y `PRODUCT_BACKLOG.md`).
 - Priorizada por impacto.
-- Asignada a un Sprint futuro concreto.
+- Asignada a un Sprint futuro concreto o a condiciones límite de negocio.
   No existirá deuda técnica indefinida o ignorada.
+  _Nota:_ Por mandato de la revisión funcional V1, queda estrictamente **prohibido** avanzar a la versión 2.0 del sistema manteniendo deudas técnicas arquitectónicas graves, tal como la ejecución secuencial del Backflushing en Producción (Debe migrarse obligatoriamente a D1 `db.batch()` según ADR-011).
 
 ## 13. PRINCIPIO DE SIMPLICIDAD
 

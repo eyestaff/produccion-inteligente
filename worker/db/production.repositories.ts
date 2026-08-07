@@ -81,3 +81,27 @@ export async function updateProductionOrderStatus(
     );
   }
 }
+
+export async function listProductionOrders(db: Database, ctx: RequestContext) {
+  return runStatement(
+    db,
+    'SELECT id, store_id AS storeId, business_line_id AS businessLineId, target_quantity AS targetQuantity, status, started_at AS startedAt, completed_at AS completedAt, created_at AS createdAt FROM production_orders WHERE company_id = ? ORDER BY id DESC',
+    [ctx.companyId],
+    'all',
+  );
+}
+
+export async function updateProductionOrder(
+  db: Database,
+  ctx: RequestContext,
+  orderId: number,
+  input: { targetQuantity: number },
+) {
+  await runStatement(
+    db,
+    'UPDATE production_orders SET target_quantity = ? WHERE id = ? AND company_id = ?',
+    [input.targetQuantity, orderId, ctx.companyId],
+  );
+  // Nota: Si cambian items, deberiamos borrar y reinsertar items,
+  // pero para v1 la edicion basica es targetQuantity.
+}
