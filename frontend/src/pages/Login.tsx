@@ -1,45 +1,67 @@
 import { useState } from 'react';
-import { setAuthToken } from '../services/api';
-import { useNavigate } from 'react-router-dom';
+import { login } from '../services/api';
 
 export function LoginPage() {
-  const [username, setUsername] = useState('admin');
+  const [email, setEmail] = useState('admin@smart-group.com');
   const [password, setPassword] = useState('admin');
-  const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // En la v1 mockearemos la auth con el token esperado por RequestContext.
-    // Ej: "1-1" (companyId=1, userId=1)
-    setAuthToken('1-1');
-    window.location.href = '/dashboard';
+    setError('');
+    setLoading(true);
+    
+    try {
+      await login(email, password);
+      window.location.href = '/dashboard';
+    } catch (err: any) {
+      setError(err.message || 'Error de autenticación');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg)' }}>
       <div className="card" style={{ width: 400, padding: '2rem' }}>
         <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Producción Inteligente</h2>
+        
+        {error && (
+          <div style={{ background: '#fee2e2', color: '#991b1b', padding: '0.75rem', borderRadius: '6px', marginBottom: '1rem', fontSize: '0.9rem', textAlign: 'center' }}>
+            {error}
+          </div>
+        )}
+        
         <form onSubmit={handleLogin}>
           <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Usuario</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Correo electrónico</label>
             <input 
-              type="text" 
-              value={username} 
-              onChange={e => setUsername(e.target.value)}
+              type="email" 
+              required
+              value={email} 
+              onChange={e => setEmail(e.target.value)}
               style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '6px' }}
+              disabled={loading}
             />
           </div>
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Contraseña</label>
             <input 
               type="password" 
+              required
               value={password} 
               onChange={e => setPassword(e.target.value)}
               style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '6px' }}
+              disabled={loading}
             />
           </div>
-          <button type="submit" style={{ width: '100%', padding: '0.75rem', background: 'var(--text)', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>
-            Iniciar Sesión
+          <button 
+            type="submit" 
+            disabled={loading}
+            style={{ width: '100%', padding: '0.75rem', background: 'var(--text)', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}
+          >
+            {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>
         </form>
       </div>

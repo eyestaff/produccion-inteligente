@@ -23,7 +23,48 @@ export async function seedDemoData(db: Database, ctx: RequestContext): Promise<v
   const deleteStatements = tables.map((table) =>
     buildStatement(db, `DELETE FROM ${table} WHERE company_id = ?`, [cid]),
   );
+
+  // Sessions and Users need special handling
+  deleteStatements.unshift(
+    buildStatement(
+      db,
+      `DELETE FROM sessions WHERE user_id IN (SELECT id FROM users WHERE company_id = ?)`,
+      [cid],
+    ),
+    buildStatement(db, `DELETE FROM users WHERE company_id = ?`, [cid]),
+  );
+
   await runBatch(db, deleteStatements);
+
+  // 1.5 Inject Admin User
+  // Generate salt and hash for password 'admin'
+  const enc = new TextEncoder();
+  const passwordKey = await crypto.subtle.importKey(
+    'raw',
+    enc.encode('admin'),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveBits'],
+  );
+  const saltArray = new Uint8Array(16);
+  crypto.getRandomValues(saltArray);
+  const derivedBits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: saltArray, iterations: 100000, hash: 'SHA-256' },
+    passwordKey,
+    256,
+  );
+  const saltHex = Array.from(saltArray)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+  const hashHex = Array.from(new Uint8Array(derivedBits))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  await runStatement(
+    db,
+    `INSERT INTO users (company_id, email, password_hash, password_salt, role, status) VALUES (?, ?, ?, ?, 'admin', 'active')`,
+    [cid, 'admin@smart-group.com', hashHex, saltHex],
+  );
 
   // 2. Create base store and business line
   const storeRes = (await runStatement(

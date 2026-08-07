@@ -1,22 +1,61 @@
 export const API_BASE = '/api';
 
 export function getAuthToken() {
+  if (typeof localStorage === 'undefined') return null;
   return localStorage.getItem('auth_token');
 }
 
 export function setAuthToken(token: string) {
+  if (typeof localStorage === 'undefined') return;
   localStorage.setItem('auth_token', token);
 }
 
-export function logout() {
+export async function login(email: string, passwordPlain: string) {
+  const response = await fetch(`${API_BASE}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password: passwordPlain }),
+  });
+
+  const data = (await response.json()) as any;
+  if (!response.ok) {
+    throw new Error(data.error || 'Error de autenticación');
+  }
+
+  if (data.token) {
+    setAuthToken(data.token);
+  }
+  return data;
+}
+
+export async function logout() {
+  if (typeof localStorage === 'undefined') return;
+
+  const token = localStorage.getItem('auth_token');
+  if (token) {
+    try {
+      await fetch(`${API_BASE}/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (e) {
+      // Ignore network errors on logout
+    }
+  }
+
   localStorage.removeItem('auth_token');
-  window.location.href = '/login';
+  if (typeof window !== 'undefined') {
+    window.location.href = '/login';
+  }
 }
 
 export async function fetchApi(path: string, options?: RequestInit) {
   const token = getAuthToken();
   if (!token && !path.startsWith('/auth')) {
-    logout();
+    await logout();
     throw new Error('No token found');
   }
 
@@ -36,14 +75,14 @@ export async function fetchApi(path: string, options?: RequestInit) {
   });
 
   if (response.status === 401) {
-    logout();
+    await logout();
     throw new Error('Unauthorized');
   }
 
   if (!response.ok) {
     let errorMsg = 'Error en la petición';
     try {
-      const errorData = await response.json();
+      const errorData = (await response.json()) as any;
       errorMsg = errorData.error || errorMsg;
     } catch (e) {
       /* ignore */
