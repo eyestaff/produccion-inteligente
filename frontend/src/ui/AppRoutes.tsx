@@ -1,6 +1,6 @@
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { AppShell } from './AppShell';
-import { DashboardPage, ProductsPage, RecipesPage, ConfigurationPage } from './pages';
+import { DashboardPage, RecipesPage, ConfigurationPage } from './pages';
 import { LoginPage } from '../pages/Login';
 import { ToastProvider } from './ToastProvider';
 import { ProductionDashboard } from '../pages/ProductionDashboard';
@@ -9,6 +9,7 @@ import { InventoryLedger } from '../pages/InventoryLedger';
 import { PurchasingPage } from '../pages/PurchasingPage';
 import { ForecastDashboard } from '../pages/ForecastDashboard';
 import { WasteDashboard } from '../pages/WasteDashboard';
+import { ProductsPage } from '../pages/ProductsPage';
 import { getAuthToken } from '../services/api';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {

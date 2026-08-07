@@ -52,26 +52,22 @@ export function generateForecast(context: ProductForecastContext[]): ForecastDas
       else confidence = 'Low';
     }
 
-    const type = item.hasRecipe ? 'produce' : 'buy';
-    const pending = item.hasRecipe ? item.pendingProduction : item.pendingPurchases;
+    const type = item.type !== 'raw_material' ? 'produce' : 'buy';
+    const pending = item.type !== 'raw_material' ? item.pendingProduction : item.pendingPurchases;
 
-    // Target for production: cover next 2 days + minimum stock. Target for buying: maxStock or minStock * 2.
-    // However, to keep it simple and unified:
-    // We aim for 2 days of stock for production, or max_stock for purchasing.
-    let target = 0;
-    if (type === 'produce') {
-      target = Math.ceil(daily7 * 2) + item.minStock;
-    } else {
-      target =
-        item.maxStock > 0
-          ? item.maxStock
-          : item.minStock > 0
-            ? item.minStock * 2
-            : Math.ceil(daily7 * 5);
-    }
+    // Smart Group Protocol: Sugerencia = (Histórico_Bianual * Tendencia) + Margen_5% - Stock - Mermas
+    // Since MVP uses 30d as base (Histórico) and 7d vs 30d as trend
+    const baseHistorical = daily30;
+    const trendFactor = 1 + trend / 100;
+    const calculatedDemand = baseHistorical * trendFactor;
+
+    // Margen de seguridad 5%
+    const zFactor = calculatedDemand * 0.05;
+
+    const target = calculatedDemand + zFactor;
 
     const deficit = target - (item.availableQuantity + pending);
-    const suggestedQuantity = deficit + item.recentWaste;
+    const suggestedQuantity = deficit > 0 ? Math.ceil(deficit + item.recentWaste) : 0;
 
     if (suggestedQuantity > 0) {
       // Build reasons array

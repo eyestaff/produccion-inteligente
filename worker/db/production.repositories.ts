@@ -136,3 +136,42 @@ export async function updateProductionOrder(
   // Nota: Si cambian items, deberiamos borrar y reinsertar items,
   // pero para v1 la edicion basica es targetQuantity.
 }
+
+export async function saveProductionOrderBOM(
+  db: Database,
+  ctx: RequestContext,
+  orderId: number,
+  items: { productId: number; quantity: number; unit: string }[],
+) {
+  // Clear any existing BOM just in case (though it should be created once per order)
+  await runStatement(
+    db,
+    'DELETE FROM production_order_bom WHERE production_order_id = ? AND company_id = ?',
+    [orderId, ctx.companyId],
+  );
+
+  for (const item of items) {
+    await runStatement(
+      db,
+      'INSERT INTO production_order_bom (company_id, production_order_id, product_id, planned_quantity, unit) VALUES (?, ?, ?, ?, ?)',
+      [ctx.companyId, orderId, item.productId, item.quantity, item.unit],
+    );
+  }
+}
+
+export async function getProductionOrderBOM(
+  db: Database,
+  ctx: RequestContext,
+  orderId: number,
+): Promise<any[]> {
+  const items = await runStatement(
+    db,
+    `SELECT b.id, b.product_id AS productId, p.name AS productName, b.planned_quantity AS plannedQuantity, b.actual_quantity AS actualQuantity, b.unit
+     FROM production_order_bom b
+     LEFT JOIN products p ON b.product_id = p.id
+     WHERE b.production_order_id = ? AND b.company_id = ?`,
+    [orderId, ctx.companyId],
+    'all',
+  );
+  return (items as any[]) || [];
+}

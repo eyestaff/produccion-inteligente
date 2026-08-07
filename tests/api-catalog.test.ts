@@ -47,4 +47,10 @@ describe('Catalog REST API (Multi-tenant)', () => {
     const res = await router(req, env);
     expect(res.status).toBe(401);
   });
+
+  test('GET /api/categories returns 401 without auth', async () => {
+    const req = new Request('http://localhost/api/categories');
+    const res = await router(req, env);
+    expect(res.status).toBe(401);
+  });
 });

@@ -14,7 +14,7 @@ export interface ProductForecastContext {
   recentWaste: number;
   pendingProduction: number;
   pendingPurchases: number;
-  hasRecipe: boolean;
+  type: string;
 }
 
 export async function getForecastContext(
@@ -34,14 +34,20 @@ export async function getForecastContext(
         SELECT SUM(ABS(quantity_change))
         FROM inventory_transactions
         WHERE product_id = p.id AND store_id = ? AND company_id = ?
-          AND type = 'out' AND reason = 'production'
+          AND type = 'out' AND (
+            (p.type = 'raw_material' AND reason = 'production') OR
+            (p.type != 'raw_material' AND reason = 'sales')
+          )
           AND created_at >= DATE('now', '-7 days')
       ), 0) AS consumption7d,
       COALESCE((
         SELECT SUM(ABS(quantity_change))
         FROM inventory_transactions
         WHERE product_id = p.id AND store_id = ? AND company_id = ?
-          AND type = 'out' AND reason = 'production'
+          AND type = 'out' AND (
+            (p.type = 'raw_material' AND reason = 'production') OR
+            (p.type != 'raw_material' AND reason = 'sales')
+          )
           AND created_at >= DATE('now', '-30 days')
       ), 0) AS consumption30d,
       COALESCE((
@@ -64,9 +70,7 @@ export async function getForecastContext(
         WHERE product_id = p.id AND store_id = ? AND company_id = ?
           AND status = 'pending'
       ), 0) AS pendingPurchases,
-      EXISTS(
-        SELECT 1 FROM recipes WHERE product_id = p.id AND status = 'active'
-      ) AS hasRecipe
+      p.type AS type
     FROM products p
     JOIN inventory i ON p.id = i.product_id AND i.store_id = ? AND i.company_id = ?
     WHERE p.company_id = ?
@@ -94,4 +98,75 @@ export async function getForecastContext(
   )) as any[];
 
   return results || [];
+}
+
+export async function saveForecast(
+  db: Database,
+  ctx: RequestContext,
+  storeId: number,
+  targetDate: string,
+  items: {
+    productId: number;
+    historicalBase: number;
+    suggestedQuantity: number;
+    adjustedQuantity: number;
+  }[],
+) {
+  const companyId = ctx.companyId;
+
+  const forecastResult = await runStatement(
+    db,
+    'INSERT INTO forecasts (company_id, store_id, target_date, status) VALUES (?, ?, ?, ?)',
+    [companyId, storeId, targetDate, 'approved'],
+  );
+
+  const forecastId =
+    typeof forecastResult === 'object' && forecastResult && 'lastInsertRowid' in forecastResult
+      ? (forecastResult as { lastInsertRowid?: unknown }).lastInsertRowid
+      : undefined;
+
+  if (!forecastId) throw new Error('No se pudo crear el forecast');
+
+  const statements = items.map((item) => ({
+    query: `INSERT INTO forecast_items (
+      company_id, forecast_id, product_id, historical_base, 
+      suggested_quantity, adjusted_quantity
+    ) VALUES (?, ?, ?, ?, ?, ?)`,
+    params: [
+      companyId,
+      forecastId,
+      item.productId,
+      item.historicalBase,
+      item.suggestedQuantity,
+      item.adjustedQuantity,
+    ],
+  }));
+
+  // En sqlite real usamos loop o un helper `runBatch` si existe,
+  // pero aquí por simplicidad los ejecutamos uno a uno
+  for (const stmt of statements) {
+    await runStatement(db, stmt.query, stmt.params);
+  }
+
+  return forecastId;
+}
+
+export async function getForecastHistory(db: Database, ctx: RequestContext, storeId: number) {
+  return runStatement(
+    db,
+    `SELECT 
+      f.id, f.target_date AS targetDate, f.status, f.created_at AS createdAt,
+      fi.product_id AS productId, p.name AS productName,
+      fi.suggested_quantity AS suggestedQuantity,
+      fi.adjusted_quantity AS adjustedQuantity,
+      fi.actual_consumption AS actualConsumption,
+      fi.deviation_percentage AS deviationPercentage
+    FROM forecasts f
+    JOIN forecast_items fi ON f.id = fi.forecast_id
+    JOIN products p ON fi.product_id = p.id
+    WHERE f.company_id = ? AND f.store_id = ?
+    ORDER BY f.target_date DESC, f.id DESC`,
+    [ctx.companyId, storeId],
+    'all',
+  );
 }

@@ -286,15 +286,7 @@ export function InventoryPage() {
   );
 }
 
-export function ProductsPage() {
-  return (
-    <div className="page-grid">
-      <PageCard title="Catálogo" description="Listado de productos principales y variantes de negocio." accent="#16a34a" />
-      <PageCard title="Disponibilidad" description="Estado de inventario asociado a cada producto." accent="#0ea5e9" />
-      <EmptyState title="Productos ejemplo" description="Esta vista representa la estructura de la página sin integrar datos reales." />
-    </div>
-  );
-}
+
 
 export function RecipesPage() {
   return (

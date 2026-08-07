@@ -212,22 +212,30 @@ export async function createProduct(
   ctx: RequestContext,
   input: {
     businessLineId?: number | null;
-    storeId?: number | null;
+    categoryId?: number | null;
     code: string;
     name: string;
+    type?: string;
+    baseUnit?: string;
+    cost?: number;
+    price?: number;
     status?: string;
   },
 ) {
   const companyId = ctx.companyId;
   const result = await runStatement(
     db,
-    'INSERT INTO products (company_id, business_line_id, store_id, code, name, status) VALUES (?, ?, ?, ?, ?, ?)',
+    'INSERT INTO products (company_id, business_line_id, category_id, code, name, type, base_unit, cost, price, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     [
       companyId,
       input.businessLineId ?? null,
-      input.storeId ?? null,
+      input.categoryId ?? null,
       input.code,
       input.name,
+      input.type ?? 'finished_good',
+      input.baseUnit ?? 'u',
+      input.cost ?? 0,
+      input.price ?? 0,
       input.status ?? 'active',
     ],
   );
@@ -237,18 +245,148 @@ export async function createProduct(
       : undefined;
   const inserted = await runStatement(
     db,
-    'SELECT id, business_line_id AS businessLineId, store_id AS storeId, code, name, status FROM products WHERE id = ? AND company_id = ?',
+    'SELECT id, business_line_id AS businessLineId, category_id AS categoryId, code, name, type, base_unit AS baseUnit, cost, price, status, created_at AS createdAt FROM products WHERE id = ? AND company_id = ?',
     [id ?? 1, companyId],
     'get',
   );
   return inserted;
 }
 
+export async function updateProduct(
+  db: Database,
+  ctx: RequestContext,
+  id: number,
+  input: {
+    businessLineId?: number | null;
+    categoryId?: number | null;
+    code?: string;
+    name?: string;
+    type?: string;
+    baseUnit?: string;
+    cost?: number;
+    price?: number;
+    status?: string;
+  },
+) {
+  const companyId = ctx.companyId;
+  const updates: string[] = [];
+  const params: unknown[] = [];
+  if (input.businessLineId !== undefined) {
+    updates.push('business_line_id = ?');
+    params.push(input.businessLineId);
+  }
+  if (input.categoryId !== undefined) {
+    updates.push('category_id = ?');
+    params.push(input.categoryId);
+  }
+  if (input.code !== undefined) {
+    updates.push('code = ?');
+    params.push(input.code);
+  }
+  if (input.name !== undefined) {
+    updates.push('name = ?');
+    params.push(input.name);
+  }
+  if (input.type !== undefined) {
+    updates.push('type = ?');
+    params.push(input.type);
+  }
+  if (input.baseUnit !== undefined) {
+    updates.push('base_unit = ?');
+    params.push(input.baseUnit);
+  }
+  if (input.cost !== undefined) {
+    updates.push('cost = ?');
+    params.push(input.cost);
+  }
+  if (input.price !== undefined) {
+    updates.push('price = ?');
+    params.push(input.price);
+  }
+  if (input.status !== undefined) {
+    updates.push('status = ?');
+    params.push(input.status);
+  }
+  if (updates.length > 0) {
+    params.push(id, companyId);
+    await runStatement(
+      db,
+      `UPDATE products SET ${updates.join(', ')} WHERE id = ? AND company_id = ?`,
+      params,
+    );
+  }
+  return runStatement(
+    db,
+    'SELECT id, business_line_id AS businessLineId, category_id AS categoryId, code, name, type, base_unit AS baseUnit, cost, price, status, created_at AS createdAt FROM products WHERE id = ? AND company_id = ?',
+    [id, companyId],
+    'get',
+  );
+}
+
 export async function listProducts(db: Database, ctx: RequestContext) {
   const companyId = ctx.companyId;
   return runStatement(
     db,
-    'SELECT id, business_line_id AS businessLineId, store_id AS storeId, code, name, status, created_at AS createdAt FROM products WHERE company_id = ? ORDER BY id ASC',
+    `SELECT 
+      p.id, 
+      p.business_line_id AS businessLineId, 
+      p.category_id AS categoryId,
+      c.name AS categoryName,
+      p.code, 
+      p.name, 
+      p.type,
+      p.base_unit AS baseUnit,
+      p.cost,
+      p.price,
+      p.status, 
+      p.created_at AS createdAt 
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.id
+    WHERE p.company_id = ? ORDER BY p.id ASC`,
+    [companyId],
+    'all',
+  );
+}
+
+export async function createCategory(
+  db: Database,
+  ctx: RequestContext,
+  input: {
+    parentId?: number | null;
+    name: string;
+    description?: string | null;
+    status?: string;
+  },
+) {
+  const companyId = ctx.companyId;
+  const result = await runStatement(
+    db,
+    'INSERT INTO categories (company_id, parent_id, name, description, status) VALUES (?, ?, ?, ?, ?)',
+    [
+      companyId,
+      input.parentId ?? null,
+      input.name,
+      input.description ?? null,
+      input.status ?? 'active',
+    ],
+  );
+  const id =
+    typeof result === 'object' && result && 'lastInsertRowid' in result
+      ? (result as { lastInsertRowid?: unknown }).lastInsertRowid
+      : undefined;
+  return runStatement(
+    db,
+    'SELECT id, parent_id AS parentId, name, description, status, created_at AS createdAt FROM categories WHERE id = ? AND company_id = ?',
+    [id ?? 1, companyId],
+    'get',
+  );
+}
+
+export async function listCategories(db: Database, ctx: RequestContext) {
+  const companyId = ctx.companyId;
+  return runStatement(
+    db,
+    'SELECT id, parent_id AS parentId, name, description, status, created_at AS createdAt FROM categories WHERE company_id = ? ORDER BY id ASC',
     [companyId],
     'all',
   );

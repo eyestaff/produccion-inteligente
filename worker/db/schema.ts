@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, uniqueIndex, real } from 'drizzle-orm/sqlite-core';
 
 export const stores = sqliteTable('stores', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -23,13 +23,30 @@ export const businessLines = sqliteTable('business_lines', {
     .default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const categories = sqliteTable('categories', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  companyId: integer('company_id').references(() => companies.id),
+  parentId: integer('parent_id'),
+  name: text('name').notNull(),
+  description: text('description'),
+  status: text('status').notNull().default('active'),
+  createdAt: text('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const products = sqliteTable('products', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   companyId: integer('company_id').references(() => companies.id),
   businessLineId: integer('business_line_id').references(() => businessLines.id),
-  storeId: integer('store_id').references(() => stores.id),
+  categoryId: integer('category_id').references(() => categories.id),
+  storeId: integer('store_id'), // Deprecated: products should belong to company, not store
   code: text('code').notNull().unique(),
   name: text('name').notNull(),
+  type: text('type').notNull().default('finished_good'), // raw_material, sub_assembly, finished_good, service
+  baseUnit: text('base_unit').notNull().default('u'), // kg, l, u, g
+  cost: real('cost').notNull().default(0),
+  price: real('price').notNull().default(0),
   status: text('status').notNull().default('active'),
   createdAt: text('created_at')
     .notNull()
@@ -54,7 +71,7 @@ export const recipeItems = sqliteTable('recipe_items', {
   companyId: integer('company_id').references(() => companies.id),
   recipeId: integer('recipe_id').references(() => recipes.id),
   productId: integer('product_id').references(() => products.id),
-  quantity: integer('quantity').notNull().default(1),
+  quantity: real('quantity').notNull().default(1),
   unit: text('unit').notNull().default('u'),
   createdAt: text('created_at')
     .notNull()
@@ -68,9 +85,9 @@ export const inventory = sqliteTable(
     companyId: integer('company_id').references(() => companies.id),
     storeId: integer('store_id').references(() => stores.id),
     productId: integer('product_id').references(() => products.id),
-    quantity: integer('quantity').notNull().default(0),
-    reservedQuantity: integer('reserved_quantity').notNull().default(0),
-    availableQuantity: integer('available_quantity').notNull().default(0),
+    quantity: real('quantity').notNull().default(0),
+    reservedQuantity: real('reserved_quantity').notNull().default(0),
+    availableQuantity: real('available_quantity').notNull().default(0),
     updatedAt: text('updated_at')
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
@@ -87,7 +104,7 @@ export const inventoryTransactions = sqliteTable('inventory_transactions', {
   productId: integer('product_id').references(() => products.id),
   lotId: integer('lot_id'),
   type: text('type').notNull(), // 'in', 'out', 'adjustment', 'production', 'reversion'
-  quantityChange: integer('quantity_change').notNull(),
+  quantityChange: real('quantity_change').notNull(),
   reason: text('reason').notNull(), // 'production', 'caducity', 'breakage', 'adjustment', 'theft', 'return'
   createdBy: integer('created_by').notNull(),
   sourceModule: text('source_module').notNull(),
@@ -118,7 +135,20 @@ export const productionOrderItems = sqliteTable('production_order_items', {
   companyId: integer('company_id').references(() => companies.id),
   productionOrderId: integer('production_order_id').references(() => productionOrders.id),
   productId: integer('product_id').references(() => products.id),
-  quantity: integer('quantity').notNull().default(0),
+  quantity: real('quantity').notNull().default(0),
+  createdAt: text('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const productionOrderBom = sqliteTable('production_order_bom', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  companyId: integer('company_id').references(() => companies.id),
+  productionOrderId: integer('production_order_id').references(() => productionOrders.id),
+  productId: integer('product_id').references(() => products.id),
+  plannedQuantity: real('planned_quantity').notNull().default(0),
+  actualQuantity: real('actual_quantity').notNull().default(0),
+  unit: text('unit').notNull().default('u'),
   createdAt: text('created_at')
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
@@ -129,7 +159,7 @@ export const wasteRecords = sqliteTable('waste_records', {
   companyId: integer('company_id').references(() => companies.id),
   storeId: integer('store_id').references(() => stores.id),
   productId: integer('product_id').references(() => products.id),
-  quantity: integer('quantity').notNull().default(0),
+  quantity: real('quantity').notNull().default(0),
   reason: text('reason').notNull().default('unknown'),
   recordedAt: text('recorded_at')
     .notNull()
@@ -164,6 +194,32 @@ export const sessions = sqliteTable('sessions', {
   userId: integer('user_id').references(() => users.id),
   token: text('token').notNull().unique(),
   expiresAt: integer('expires_at').notNull(),
+  createdAt: text('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const forecasts = sqliteTable('forecasts', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  companyId: integer('company_id').references(() => companies.id),
+  storeId: integer('store_id').references(() => stores.id),
+  targetDate: text('target_date').notNull(),
+  status: text('status').notNull().default('draft'), // draft, approved, executed
+  createdAt: text('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const forecastItems = sqliteTable('forecast_items', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  companyId: integer('company_id').references(() => companies.id),
+  forecastId: integer('forecast_id').references(() => forecasts.id),
+  productId: integer('product_id').references(() => products.id),
+  historicalBase: real('historical_base').notNull().default(0),
+  suggestedQuantity: real('suggested_quantity').notNull().default(0),
+  adjustedQuantity: real('adjusted_quantity').notNull().default(0),
+  actualConsumption: real('actual_consumption').notNull().default(0),
+  deviationPercentage: real('deviation_percentage').notNull().default(0),
   createdAt: text('created_at')
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),

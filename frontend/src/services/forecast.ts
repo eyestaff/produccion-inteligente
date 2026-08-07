@@ -31,7 +31,27 @@ export interface ForecastDashboardResult {
   updatedAt: string;
 }
 
+export interface ForecastHistoryItem {
+  id: number;
+  targetDate: string;
+  status: string;
+  createdAt: string;
+  productId: number;
+  productName: string;
+  suggestedQuantity: number;
+  adjustedQuantity: number;
+  actualConsumption: number;
+  deviationPercentage: number;
+}
+
 export const ForecastAPI = {
   getDashboard: (storeId: number) =>
     fetchApi(`/forecast/${storeId}/dashboard`) as Promise<ForecastDashboardResult>,
+  getHistory: (storeId: number) =>
+    fetchApi(`/forecast/${storeId}/history`) as Promise<ForecastHistoryItem[]>,
+  approvePlan: (storeId: number, targetDate: string, items: any[]) =>
+    fetchApi(`/forecast/${storeId}/approve`, {
+      method: 'POST',
+      body: JSON.stringify({ targetDate, items }),
+    }),
 };

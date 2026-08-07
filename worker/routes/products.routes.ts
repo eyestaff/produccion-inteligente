@@ -8,7 +8,7 @@ export async function handleProductsRoute(
   env: Env,
   ctx: RequestContext | null,
 ): Promise<Response | null> {
-  if (!pathname.startsWith('/api/products')) {
+  if (!pathname.startsWith('/api/products') && !pathname.startsWith('/api/categories')) {
     return null;
   }
   if (!ctx) {
@@ -20,7 +20,8 @@ export async function handleProductsRoute(
 
   try {
     if (pathname === '/api/products' && method === 'GET') {
-      const items = await service.list(ctx);
+      const rawItems: any = await service.list(ctx);
+      const items = Array.isArray(rawItems) ? rawItems : rawItems?.results || [];
       return new Response(JSON.stringify(items), {
         headers: { 'Content-Type': 'application/json' },
       });
@@ -29,6 +30,32 @@ export async function handleProductsRoute(
     if (pathname === '/api/products' && method === 'POST') {
       const input = await request.json<any>();
       const item = await service.create(ctx, input);
+      return new Response(JSON.stringify(item), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (pathname.match(/^\/api\/products\/\d+$/) && method === 'PUT') {
+      const id = parseInt(pathname.split('/').pop() || '0', 10);
+      const input = await request.json<any>();
+      const item = await service.update(ctx, id, input);
+      return new Response(JSON.stringify(item), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (pathname === '/api/categories' && method === 'GET') {
+      const items = await service.listCategories(ctx);
+      return new Response(JSON.stringify(items), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (pathname === '/api/categories' && method === 'POST') {
+      const input = await request.json<any>();
+      const item = await service.createCategory(ctx, input);
       return new Response(JSON.stringify(item), {
         status: 201,
         headers: { 'Content-Type': 'application/json' },

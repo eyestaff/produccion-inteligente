@@ -1,19 +1,26 @@
 import { useEffect, useState } from 'react';
-import { ForecastAPI, ForecastDashboardResult, ForecastRecommendation, ForecastRisk } from '../services/forecast';
+import { ForecastAPI, ForecastDashboardResult, ForecastRecommendation, ForecastRisk, ForecastHistoryItem } from '../services/forecast';
 import { CatalogAPI, Store } from '../services/catalog';
 import { useToast } from '../ui/ToastProvider';
 import { SkeletonRow } from '../ui/Skeleton';
 import { EmptyState } from '../ui/EmptyState';
 import { useStoreSelection } from '../ui/useStoreSelection';
 
-// ── Helpers ────────────────────────────────────────────────────────────────
 const CONFIDENCE_COLORS = {
-  High: { bg: '#d1fae5', text: '#065f46', label: 'Alta' },
-  Medium: { bg: '#fef3c7', text: '#92400e', label: 'Media' },
+  High: { bg: '#dcfce7', text: '#166534', label: 'Alta' },
+  Medium: { bg: '#fef9c3', text: '#854d0e', label: 'Media' },
   Low: { bg: '#fee2e2', text: '#991b1b', label: 'Baja' },
 };
 
-function RecommendationCard({ rec }: { rec: ForecastRecommendation }) {
+function RecommendationCard({ 
+  rec, 
+  adjustedQuantity, 
+  onAdjust 
+}: { 
+  rec: ForecastRecommendation, 
+  adjustedQuantity: number, 
+  onAdjust: (val: number) => void 
+}) {
   const [expanded, setExpanded] = useState(false);
   const conf = CONFIDENCE_COLORS[rec.confidence];
   const typeLabel = rec.type === 'produce' ? 'Fabricar' : 'Comprar';
@@ -29,32 +36,50 @@ function RecommendationCard({ rec }: { rec: ForecastRecommendation }) {
       transition: 'box-shadow 0.2s',
     }}>
       <div 
-        onClick={() => setExpanded(!expanded)}
-        style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}
+        style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}
       >
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => setExpanded(!expanded)}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--text)' }}>{rec.productName}</span>
             <span style={{ padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600, background: conf.bg, color: conf.text }}>
               Confianza {conf.label}
             </span>
           </div>
-        </div>
-        <div style={{ textAlign: 'right', paddingRight: '1rem', borderRight: '1px solid var(--border)' }}>
-          <div style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 600, textTransform: 'uppercase' }}>
-            {typeLabel} sugerido
-          </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: typeColor }}>
-            {rec.suggestedQuantity}
+          <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+            Sugerido: <strong>{rec.suggestedQuantity}</strong> (Base: {rec.metrics.consumption30d > 0 ? (rec.metrics.consumption30d/30).toFixed(1) : 0}/día)
           </div>
         </div>
-        <div style={{ color: 'var(--muted)' }}>{expanded ? '▲' : '▼'}</div>
+        
+        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+          <label style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 600, textTransform: 'uppercase' }}>
+            {typeLabel} (Ajuste)
+          </label>
+          <input 
+            type="number" 
+            min="0"
+            value={adjustedQuantity}
+            onChange={(e) => onAdjust(Number(e.target.value))}
+            style={{
+              width: '80px',
+              padding: '0.5rem',
+              borderRadius: '6px',
+              border: `2px solid ${typeColor}`,
+              fontSize: '1.1rem',
+              fontWeight: 700,
+              textAlign: 'center'
+            }}
+          />
+        </div>
+        
+        <div style={{ color: 'var(--muted)', cursor: 'pointer' }} onClick={() => setExpanded(!expanded)}>
+          {expanded ? '▲' : '▼'}
+        </div>
       </div>
 
       {expanded && (
         <div style={{ padding: '1rem 1.25rem', background: '#f8fafc', borderTop: '1px solid var(--border)' }}>
           <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: 'var(--text)', textTransform: 'uppercase' }}>
-            ¿Por qué el sistema sugiere esto? (Datos históricos)
+            ¿Por qué el sistema sugiere {rec.suggestedQuantity}? (Datos históricos)
           </h4>
           <ul style={{ margin: 0, paddingLeft: '1.25rem', color: '#475569', fontSize: '0.9rem', lineHeight: 1.6 }}>
             {rec.reasons.map((r, i) => (
@@ -100,7 +125,12 @@ export function ForecastDashboard() {
   const [selectedStoreId, setSelectedStoreId] = useStoreSelection();
   
   const [data, setData] = useState<ForecastDashboardResult | null>(null);
+  const [history, setHistory] = useState<ForecastHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // State for adjustments
+  const [adjustments, setAdjustments] = useState<Record<number, number>>({});
+  const [isApproving, setIsApproving] = useState(false);
 
   useEffect(() => {
     CatalogAPI.getStores().then(s => {
@@ -111,7 +141,10 @@ export function ForecastDashboard() {
   }, []);
 
   useEffect(() => {
-    if (selectedStoreId) loadData();
+    if (selectedStoreId) {
+      loadData();
+      loadHistory();
+    }
   }, [selectedStoreId]);
 
   const loadData = async () => {
@@ -120,10 +153,54 @@ export function ForecastDashboard() {
     try {
       const res = await ForecastAPI.getDashboard(selectedStoreId);
       setData(res);
+      // Initialize adjustments with suggested quantities
+      const initialAdj: Record<number, number> = {};
+      res.recommendations.forEach(r => {
+        initialAdj[r.productId] = r.suggestedQuantity;
+      });
+      setAdjustments(initialAdj);
     } catch (e: any) {
       toast(e.message || 'Error cargando forecast', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadHistory = async () => {
+    if (!selectedStoreId) return;
+    try {
+      const hist = await ForecastAPI.getHistory(selectedStoreId);
+      setHistory(hist);
+    } catch (e: any) {
+      console.error(e);
+    }
+  };
+
+  const handleAdjust = (productId: number, val: number) => {
+    setAdjustments(prev => ({ ...prev, [productId]: val }));
+  };
+
+  const handleApprove = async () => {
+    if (!selectedStoreId || !data) return;
+    setIsApproving(true);
+    try {
+      const targetDate = new Date().toISOString().split('T')[0];
+      const itemsPayload = data.recommendations.map(r => ({
+        productId: r.productId,
+        type: r.type,
+        historicalBase: r.metrics.consumption30d > 0 ? r.metrics.consumption30d / 30 : 0,
+        suggestedQuantity: r.suggestedQuantity,
+        adjustedQuantity: adjustments[r.productId] || 0
+      }));
+
+      await ForecastAPI.approvePlan(selectedStoreId, targetDate, itemsPayload);
+      toast('Plan aprobado y Órdenes de Producción generadas.', 'success');
+      loadData();
+      loadHistory();
+    } catch (e: any) {
+      toast(e.message || 'Error aprobando plan', 'error');
+    } finally {
+      setIsApproving(false);
     }
   };
 
@@ -148,21 +225,39 @@ export function ForecastDashboard() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h2 style={{ margin: 0, fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            Forecast <span style={{ fontSize: '0.9rem', padding: '3px 8px', background: '#e0e7ff', color: '#3730a3', borderRadius: '12px', fontWeight: 600 }}>v1.0 (Histórico)</span>
+            Forecast & S&OP <span style={{ fontSize: '0.9rem', padding: '3px 8px', background: '#e0e7ff', color: '#3730a3', borderRadius: '12px', fontWeight: 600 }}>Smart Protocol v1</span>
           </h2>
           <p style={{ margin: '0.25rem 0 0', color: 'var(--muted)', fontSize: '0.9rem' }}>
-            Predicciones basadas 100% en el consumo real de los últimos 30 días.
+            Predicciones basadas en ventas y consumo real de los últimos 30 días.
           </p>
         </div>
-        {stores.length > 0 && (
-          <select
-            value={selectedStoreId || ''}
-            onChange={e => setSelectedStoreId(Number(e.target.value))}
-            style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--panel)', color: 'var(--text)', fontWeight: 500 }}
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          {stores.length > 0 && (
+            <select
+              value={selectedStoreId || ''}
+              onChange={e => setSelectedStoreId(Number(e.target.value))}
+              style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--panel)', color: 'var(--text)', fontWeight: 500 }}
+            >
+              {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+          )}
+          <button 
+            onClick={handleApprove}
+            disabled={isApproving || data.recommendations.length === 0}
+            style={{
+              padding: '0.75rem 1.5rem',
+              borderRadius: '8px',
+              border: 'none',
+              background: '#10b981',
+              color: 'white',
+              fontWeight: 700,
+              cursor: isApproving ? 'not-allowed' : 'pointer',
+              opacity: isApproving ? 0.7 : 1
+            }}
           >
-            {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
-        )}
+            {isApproving ? 'Aprobando...' : 'Aprobar Plan y Generar Órdenes'}
+          </button>
+        </div>
       </div>
 
       {/* Riesgos Alert */}
@@ -188,7 +283,14 @@ export function ForecastDashboard() {
               No hay necesidades de producción urgentes detectadas por el forecast.
             </div>
           ) : (
-            produceRecs.map(r => <RecommendationCard key={r.productId} rec={r} />)
+            produceRecs.map(r => (
+              <RecommendationCard 
+                key={r.productId} 
+                rec={r} 
+                adjustedQuantity={adjustments[r.productId] ?? r.suggestedQuantity} 
+                onAdjust={(val) => handleAdjust(r.productId, val)}
+              />
+            ))
           )}
         </div>
 
@@ -202,15 +304,48 @@ export function ForecastDashboard() {
               El inventario de materias primas y productos comprados parece estar sano.
             </div>
           ) : (
-            buyRecs.map(r => <RecommendationCard key={r.productId} rec={r} />)
+            buyRecs.map(r => (
+              <RecommendationCard 
+                key={r.productId} 
+                rec={r} 
+                adjustedQuantity={adjustments[r.productId] ?? r.suggestedQuantity} 
+                onAdjust={(val) => handleAdjust(r.productId, val)}
+              />
+            ))
           )}
         </div>
 
       </div>
 
-      <div style={{ textAlign: 'right', fontSize: '0.75rem', color: 'var(--muted)' }}>
-        Último cálculo: {new Date(data.updatedAt).toLocaleTimeString()}
-      </div>
+      {/* Histórico y Desviaciones */}
+      {history.length > 0 && (
+        <div style={{ marginTop: '2rem', borderTop: '1px solid var(--border)', paddingTop: '2rem' }}>
+          <h3 style={{ marginBottom: '1rem', color: 'var(--text)' }}>Histórico de Previsiones (Desviaciones)</h3>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--border)', textAlign: 'left', color: 'var(--muted)' }}>
+                  <th style={{ padding: '0.75rem' }}>Fecha Objetivo</th>
+                  <th style={{ padding: '0.75rem' }}>Producto</th>
+                  <th style={{ padding: '0.75rem' }}>Sugerido</th>
+                  <th style={{ padding: '0.75rem' }}>Aprobado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {history.map(h => (
+                  <tr key={h.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                    <td style={{ padding: '0.75rem' }}>{h.targetDate}</td>
+                    <td style={{ padding: '0.75rem', fontWeight: 500 }}>{h.productName}</td>
+                    <td style={{ padding: '0.75rem', color: '#64748b' }}>{Number(h.suggestedQuantity).toFixed(2)}</td>
+                    <td style={{ padding: '0.75rem', fontWeight: 600 }}>{Number(h.adjustedQuantity).toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
