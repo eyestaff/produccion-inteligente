@@ -57,6 +57,8 @@ export async function requireAuth(
       },
       token,
       companyId: user.companyId,
+      userId: user.id,
+      role: user.role,
     },
   };
 }

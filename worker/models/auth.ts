@@ -7,8 +7,9 @@ export interface LoginResponse {
   error?: string;
 }
 
-export interface AuthContext {
+import type { RequestContext } from './context';
+
+export interface AuthContext extends RequestContext {
   user: UserResponse;
   token: string;
-  companyId: number;
 }

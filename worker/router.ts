@@ -5,6 +5,9 @@ import { handleDashboardRoute } from './routes/dashboard';
 import { handleRecordsRoute } from './routes/records.routes';
 import { handleAssetsRoute } from './routes/assets.routes';
 import { handleAuthRoute } from './routes/auth.routes';
+import { handleStoresRoute } from './routes/stores.routes';
+import { handleBusinessLinesRoute } from './routes/business-lines.routes';
+import { handleProductsRoute } from './routes/products.routes';
 import { requireAuth } from './middlewares/auth.middleware';
 import { initializeDb } from './db';
 
@@ -40,6 +43,15 @@ export async function router(request: Request, env: Env): Promise<Response> {
   if (pathname.startsWith('/api/records')) {
     await initializeDb(env.DB);
   }
+
+  response = await handleStoresRoute(pathname, request, env, authContext);
+  if (response) return response;
+
+  response = await handleBusinessLinesRoute(pathname, request, env, authContext);
+  if (response) return response;
+
+  response = await handleProductsRoute(pathname, request, env, authContext);
+  if (response) return response;
 
   response = await handleRecordsRoute(pathname, request, env, authContext);
   if (response) return response;
