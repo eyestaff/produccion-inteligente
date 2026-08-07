@@ -1,6 +1,9 @@
+import type { Env } from '../index';
+
 export async function handleDashboardRoute(
   pathname: string,
   request: Request,
+  _env: Env,
 ): Promise<Response | null> {
   if (pathname !== '/api/dashboard' || request.method !== 'GET') {
     return null;
