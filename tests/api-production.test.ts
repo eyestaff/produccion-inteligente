@@ -49,14 +49,12 @@ describe('ProductionService - API Integration', () => {
     // Insumo
     const harina = await createProduct(db as any, ctx, {
       businessLineId: bLine.id,
-      storeId: store.id,
       name: 'Harina',
       code: 'HAR',
     });
     // Producto Final
     const pan = await createProduct(db as any, ctx, {
       businessLineId: bLine.id,
-      storeId: store.id,
       name: 'Pan',
       code: 'PAN1',
     });
@@ -122,13 +120,11 @@ describe('ProductionService - API Integration', () => {
 
     const harina = await createProduct(db as any, ctx, {
       businessLineId: bLine.id,
-      storeId: store.id,
       name: 'Harina BOM',
       code: 'HBOM',
     });
     const pan = await createProduct(db as any, ctx, {
       businessLineId: bLine.id,
-      storeId: store.id,
       name: 'Pan BOM',
       code: 'PBOM',
     });

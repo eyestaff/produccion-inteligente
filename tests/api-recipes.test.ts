@@ -34,16 +34,14 @@ describe('RecipesService - API Integration', () => {
 
     // Setup basic products
     const bLineA = await createBusinessLine(db as any, ctxA, { name: 'Linea A', code: 'LA' });
-    const storeA = await createStore(db as any, ctxA, { name: 'Store A', code: 'SA' });
+    await createStore(db as any, ctxA, { name: 'Store A', code: 'SA' });
     const productA = await createProduct(db as any, ctxA, {
       businessLineId: bLineA.id,
-      storeId: storeA.id,
       name: 'Product Final',
       code: 'PF',
     });
     const productIngredient = await createProduct(db as any, ctxA, {
       businessLineId: bLineA.id,
-      storeId: storeA.id,
       name: 'Flour',
       code: 'FL',
     });

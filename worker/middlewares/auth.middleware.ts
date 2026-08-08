@@ -54,6 +54,7 @@ export async function requireAuth(
         email: user.email,
         role: user.role,
         status: user.status,
+        mustChangePassword: user.mustChangePassword === 1,
       },
       token,
       companyId: user.companyId,

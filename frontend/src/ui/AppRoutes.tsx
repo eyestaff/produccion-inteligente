@@ -3,6 +3,7 @@ import { AppShell } from './AppShell';
 import { DashboardPage, ConfigurationPage } from './pages';
 import { RecipesPage } from '../pages/RecipesPage';
 import { LoginPage } from '../pages/Login';
+import { ChangePasswordPage } from '../pages/ChangePasswordPage';
 import { ToastProvider } from './ToastProvider';
 import { ProductionDashboard } from '../pages/ProductionDashboard';
 import { InventoryDashboard } from '../pages/InventoryDashboard';
@@ -11,7 +12,8 @@ import { PurchasingPage } from '../pages/PurchasingPage';
 import { ForecastDashboard } from '../pages/ForecastDashboard';
 import { WasteDashboard } from '../pages/WasteDashboard';
 import { ProductsPage } from '../pages/ProductsPage';
-import { getAuthToken } from '../services/api';
+import { getAuthToken, getMustChangePassword } from '../services/api';
+
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (!getAuthToken()) {
@@ -19,6 +21,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
       return <LoginPage />;
     }
     return <Navigate to="/login" replace />;
+  }
+  // If the user must change their password, redirect them to the change screen
+  if (getMustChangePassword()) {
+    return <Navigate to="/change-password" replace />;
   }
   return <>{children}</>;
 }
@@ -28,6 +34,15 @@ export function AppRoutes() {
     <ToastProvider>
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      {/* Change password — accessible only with a valid token, no AppShell */}
+      <Route
+        path="/change-password"
+        element={
+          getAuthToken()
+            ? <ChangePasswordPage forced={getMustChangePassword()} />
+            : <Navigate to="/login" replace />
+        }
+      />
       <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
@@ -45,4 +60,5 @@ export function AppRoutes() {
     </ToastProvider>
   );
 }
+
 

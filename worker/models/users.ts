@@ -6,6 +6,7 @@ export interface User {
   passwordSalt: string;
   role: string;
   status: string;
+  mustChangePassword: number; // 0 | 1 (SQLite integer)
   createdAt: string;
 }
 
@@ -22,4 +23,5 @@ export interface UserResponse {
   email: string;
   role: string;
   status: string;
+  mustChangePassword: boolean;
 }

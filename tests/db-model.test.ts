@@ -50,7 +50,6 @@ describe('d1 data model', () => {
     });
     const product = await createProduct(db, createMockContext(1), {
       businessLineId: businessLine.id,
-      storeId: store.id,
       code: 'P1',
       name: 'Producto A',
     });

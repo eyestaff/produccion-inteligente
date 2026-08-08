@@ -37,7 +37,8 @@ export async function router(request: Request, env: Env): Promise<Response> {
     if (
       pathname.startsWith('/api/') &&
       pathname !== '/api/auth/login' &&
-      pathname !== '/api/auth/logout'
+      pathname !== '/api/auth/logout' &&
+      pathname !== '/api/auth/change-password'
     ) {
       const authResult = await requireAuth(request, env);
       if (authResult.errorResponse) {

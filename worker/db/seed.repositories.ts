@@ -62,8 +62,8 @@ export async function seedDemoData(db: Database, ctx: RequestContext): Promise<v
 
   await runStatement(
     db,
-    `INSERT INTO users (company_id, email, password_hash, password_salt, role, status) VALUES (?, ?, ?, ?, 'admin', 'active')`,
-    [cid, 'admin@smart-group.com', hashHex, saltHex],
+    `INSERT INTO users (company_id, email, password_hash, password_salt, role, status, must_change_password) VALUES (?, ?, ?, ?, 'admin', 'active', 1)`,
+    [cid, 'eyestaff.ncarrillo@gmail.com', hashHex, saltHex],
   );
 
   // 2. Create base store and business line

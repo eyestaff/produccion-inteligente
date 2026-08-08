@@ -36,7 +36,6 @@ describe('InventoryService - API Integration', () => {
     const storeA = await createStore(db as any, ctxA, { name: 'Tienda A', code: 'TA' });
     const productA = await createProduct(db as any, ctxA, {
       businessLineId: bLine.id,
-      storeId: storeA.id,
       name: 'Harina',
       code: 'HAR',
     });

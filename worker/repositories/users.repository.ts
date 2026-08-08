@@ -4,7 +4,7 @@ import type { User, Session } from '../models/users';
 export async function findUserByEmail(db: Env['DB'], email: string): Promise<User | null> {
   const user = await db
     .prepare(
-      'SELECT id, company_id as companyId, email, password_hash as passwordHash, password_salt as passwordSalt, role, status, created_at as createdAt FROM users WHERE email = ?',
+      'SELECT id, company_id as companyId, email, password_hash as passwordHash, password_salt as passwordSalt, role, status, must_change_password as mustChangePassword, created_at as createdAt FROM users WHERE email = ?',
     )
     .bind(email)
     .first<User>();
@@ -14,7 +14,7 @@ export async function findUserByEmail(db: Env['DB'], email: string): Promise<Use
 export async function findUserById(db: Env['DB'], id: number): Promise<User | null> {
   const user = await db
     .prepare(
-      'SELECT id, company_id as companyId, email, password_hash as passwordHash, password_salt as passwordSalt, role, status, created_at as createdAt FROM users WHERE id = ?',
+      'SELECT id, company_id as companyId, email, password_hash as passwordHash, password_salt as passwordSalt, role, status, must_change_password as mustChangePassword, created_at as createdAt FROM users WHERE id = ?',
     )
     .bind(id)
     .first<User>();
@@ -61,4 +61,22 @@ export async function findSessionByToken(db: Env['DB'], token: string): Promise<
 
 export async function deleteSession(db: Env['DB'], token: string): Promise<void> {
   await db.prepare('DELETE FROM sessions WHERE token = ?').bind(token).run();
+}
+
+/**
+ * Updates a user's password and clears the must_change_password flag.
+ * Uses the same PBKDF2 hashing as the rest of the auth system.
+ */
+export async function updateUserPassword(
+  db: Env['DB'],
+  userId: number,
+  newPasswordHash: string,
+  newPasswordSalt: string,
+): Promise<void> {
+  await db
+    .prepare(
+      'UPDATE users SET password_hash = ?, password_salt = ?, must_change_password = 0 WHERE id = ?',
+    )
+    .bind(newPasswordHash, newPasswordSalt, userId)
+    .run();
 }

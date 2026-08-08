@@ -10,6 +10,16 @@ export function setAuthToken(token: string) {
   localStorage.setItem('auth_token', token);
 }
 
+export function getMustChangePassword(): boolean {
+  if (typeof localStorage === 'undefined') return false;
+  return localStorage.getItem('must_change_password') === '1';
+}
+
+export function clearMustChangePassword() {
+  if (typeof localStorage === 'undefined') return;
+  localStorage.removeItem('must_change_password');
+}
+
 export async function login(email: string, passwordPlain: string) {
   const response = await fetch(`${API_BASE}/auth/login`, {
     method: 'POST',
@@ -24,6 +34,12 @@ export async function login(email: string, passwordPlain: string) {
 
   if (data.token) {
     setAuthToken(data.token);
+    // Persist the must_change_password flag so the router can redirect
+    if (data.user?.mustChangePassword) {
+      localStorage.setItem('must_change_password', '1');
+    } else {
+      localStorage.removeItem('must_change_password');
+    }
   }
   return data;
 }
@@ -47,9 +63,20 @@ export async function logout() {
   }
 
   localStorage.removeItem('auth_token');
+  localStorage.removeItem('must_change_password');
   if (typeof window !== 'undefined') {
     window.location.href = '/login';
   }
+}
+
+export async function changePassword(
+  newPassword: string,
+  confirmPassword: string,
+): Promise<{ success: boolean; message: string }> {
+  return fetchApi('/auth/change-password', {
+    method: 'POST',
+    body: JSON.stringify({ newPassword, confirmPassword }),
+  });
 }
 
 export async function fetchApi(path: string, options?: RequestInit) {

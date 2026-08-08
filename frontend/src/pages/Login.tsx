@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { login } from '../services/api';
+import { login, getMustChangePassword } from '../services/api';
 
 export function LoginPage() {
-  const [email, setEmail] = useState('admin@smart-group.com');
-  const [password, setPassword] = useState('admin');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,13 +15,19 @@ export function LoginPage() {
     
     try {
       await login(email, password);
-      window.location.href = '/dashboard';
+      // If the user must change their password, redirect to the change screen
+      if (getMustChangePassword()) {
+        window.location.href = '/change-password';
+      } else {
+        window.location.href = '/dashboard';
+      }
     } catch (err: any) {
       setError(err.message || 'Error de autenticación');
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg)' }}>

@@ -1,11 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { Env } from '../worker/index';
 import { router } from '../worker/router';
-import { Database } from '../worker/db/repositories';
-import Database from 'better-sqlite3';
+import BetterSqlite3Database from 'better-sqlite3';
 
 function getTestDb(schema: string) {
-  const sqliteDb = new Database(':memory:');
+  const sqliteDb = new BetterSqlite3Database(':memory:');
   sqliteDb.exec(schema);
 
   // Wrap to emulate D1
@@ -32,8 +31,9 @@ function getTestDb(schema: string) {
   return db as any;
 }
 
-let db: Database;
+let db: any;
 let env: Env;
+
 const companyId = 1;
 const storeId = 1;
 const productId = 1;
@@ -46,14 +46,12 @@ beforeAll(async () => {
     CREATE TABLE products (id INTEGER PRIMARY KEY AUTOINCREMENT, company_id INTEGER, business_line_id INTEGER, store_id INTEGER, code TEXT NOT NULL UNIQUE, name TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'active', created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
     CREATE TABLE inventory (id INTEGER PRIMARY KEY AUTOINCREMENT, company_id INTEGER, store_id INTEGER, product_id INTEGER, quantity INTEGER NOT NULL DEFAULT 0, reserved_quantity INTEGER NOT NULL DEFAULT 0, available_quantity INTEGER NOT NULL DEFAULT 0, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
     CREATE TABLE inventory_transactions (id INTEGER PRIMARY KEY AUTOINCREMENT, company_id INTEGER, store_id INTEGER, product_id INTEGER, lot_id INTEGER, type TEXT NOT NULL, quantity_change INTEGER NOT NULL, reason TEXT NOT NULL, created_by INTEGER NOT NULL, source_module TEXT NOT NULL, reference_type TEXT, reference_id INTEGER, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
-    CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, company_id INTEGER, email TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, password_salt TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'user', status TEXT NOT NULL DEFAULT 'active', created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+    CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, company_id INTEGER, email TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, password_salt TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'user', status TEXT NOT NULL DEFAULT 'active', must_change_password INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
     CREATE TABLE sessions (id INTEGER PRIMARY KEY AUTOINCREMENT, token TEXT NOT NULL UNIQUE, user_id INTEGER NOT NULL, expires_at TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
   `);
   env = {
     DB: db,
-    JWT_SECRET: 'test-secret',
     ASSETS: {} as any,
-    ASSETS_FETCH: {} as any,
     PROJECT_NAME: 'Test',
   };
 

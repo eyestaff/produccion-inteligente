@@ -1,4 +1,4 @@
-import type { Database } from '../db/repositories';
+import type { Env } from '../index';
 import type { RequestContext } from '../models/context';
 import { runStatement } from '../db/repositories';
 import { InventoryService } from './inventory.service';
@@ -16,11 +16,11 @@ export const ALL_WASTE_REASONS = [
 ];
 
 export class WasteService {
-  private db: Database;
+  private db: Env['DB'];
   private ctx: RequestContext;
   private inventoryService: InventoryService;
 
-  constructor(db: Database, ctx: RequestContext) {
+  constructor(db: Env['DB'], ctx: RequestContext) {
     this.db = db;
     this.ctx = ctx;
     this.inventoryService = new InventoryService(db, ctx);
