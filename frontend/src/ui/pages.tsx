@@ -288,15 +288,7 @@ export function InventoryPage() {
 
 
 
-export function RecipesPage() {
-  return (
-    <div className="page-grid">
-      <PageCard title="Recetas activas" description="Recetas y fórmulas de elaboración para la operación." accent="#7c3aed" />
-      <PageCard title="Versiones" description="Control de cambios en las formulaciones y parámetros." accent="#dc2626" />
-      <EmptyState title="Recetas de ejemplo" description="El contenido de esta sección se usará para mostrar la jerarquía de preparación." />
-    </div>
-  );
-}
+
 
 export function ConfigurationPage() {
   const toast = useToast();

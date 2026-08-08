@@ -1,6 +1,7 @@
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { AppShell } from './AppShell';
-import { DashboardPage, RecipesPage, ConfigurationPage } from './pages';
+import { DashboardPage, ConfigurationPage } from './pages';
+import { RecipesPage } from '../pages/RecipesPage';
 import { LoginPage } from '../pages/Login';
 import { ToastProvider } from './ToastProvider';
 import { ProductionDashboard } from '../pages/ProductionDashboard';
