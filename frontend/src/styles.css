@@ -100,7 +100,7 @@ body {
 }
 
 .app-shell--collapsed {
-  grid-template-columns: 88px minmax(0, 1fr);
+  grid-template-columns: 64px minmax(0, 1fr);
 }
 
 .theme-dark {

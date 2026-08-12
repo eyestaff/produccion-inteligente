@@ -60,21 +60,21 @@ export function AppShell({ title }: AppShellProps) {
           {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </button>
 
-        <nav className="sidebar__nav" aria-label="Navegación principal">
-          {APP_ROUTES.map((route) => (
-            <NavLink
-              key={route.path}
-              to={route.path}
-              className={({ isActive }) => classNames('nav-link', isActive && 'nav-link--active')}
-              title={route.title}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <span>
-                {sidebarCollapsed && !mobileMenuOpen ? route.title.charAt(0) : route.title}
-              </span>
-            </NavLink>
-          ))}
-        </nav>
+        {!sidebarCollapsed && (
+          <nav className="sidebar__nav" aria-label="Navegación principal">
+            {APP_ROUTES.map((route) => (
+              <NavLink
+                key={route.path}
+                to={route.path}
+                className={({ isActive }) => classNames('nav-link', isActive && 'nav-link--active')}
+                title={route.title}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span>{route.title}</span>
+              </NavLink>
+            ))}
+          </nav>
+        )}
       </aside>
 
       <div className="main-panel">
