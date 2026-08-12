@@ -97,6 +97,12 @@ export async function router(request: Request, env: Env): Promise<Response> {
     response = await handlePwaRoute(pathname);
     if (response) return logAndReturn(response, startTime, method, pathname, authContext);
 
+    if (!pathname.startsWith('/api/') && env.ASSETS_FETCH) {
+      const indexUrl = new URL(request.url);
+      indexUrl.pathname = '/';
+      return await env.ASSETS_FETCH.fetch(new Request(indexUrl, request));
+    }
+
     return logAndReturn(
       new Response('Not found', { status: 404 }),
       startTime,

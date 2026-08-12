@@ -197,7 +197,7 @@ export function ProductionDashboard() {
           </div>
         ) : (
           <div className="table-responsive">
-          <table>
+          <div style={{ overflowX: "auto" }}><table>
             <thead>
               <tr>
                 <th>Orden</th>
@@ -255,7 +255,7 @@ export function ProductionDashboard() {
                 );
               })}
             </tbody>
-          </table>
+          </table></div>
           </div>
         )}
       </div>

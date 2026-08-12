@@ -163,7 +163,7 @@ export function WasteDashboard() {
             </div>
             
             <div className="table-responsive">
-              <table>
+              <div style={{ overflowX: "auto" }}><table>
                 <thead>
                   <tr>
                     <th>Fecha</th>
@@ -208,7 +208,7 @@ export function WasteDashboard() {
                     ))
                   )}
                 </tbody>
-              </table>
+              </table></div>
             </div>
           </div>
         </>

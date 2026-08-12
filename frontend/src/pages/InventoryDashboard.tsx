@@ -133,7 +133,7 @@ export function InventoryDashboard() {
           />
         </div>
         <div className="table-responsive">
-          <table>
+          <div style={{ overflowX: "auto" }}><table>
             <thead>
               <tr>
                 <th>Producto</th>
@@ -174,7 +174,7 @@ export function InventoryDashboard() {
                 ))
               )}
             </tbody>
-          </table>
+          </table></div>
         </div>
       </div>
 

@@ -3,6 +3,7 @@ import { router } from './router';
 export interface Env {
   DB: D1Database;
   ASSETS: R2Bucket;
+  ASSETS_FETCH: Fetcher;
   PROJECT_NAME: string;
   APP_URL: string;
   BREVO_API_KEY: string;

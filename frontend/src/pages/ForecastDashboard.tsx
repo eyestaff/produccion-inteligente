@@ -41,7 +41,7 @@ function RecommendationCard({
         <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => setExpanded(!expanded)}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--text)' }}>{rec.productName}</span>
-            {isAiAdjusted && (
+            {(rec as any).isAiAdjusted && (
               <span style={{ padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600, background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)', color: '#3730a3', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                 <span>🤖</span> IA
               </span>
@@ -334,7 +334,7 @@ export function ForecastDashboard() {
             <h3 style={{ margin: 0, color: 'var(--text)', fontSize: '1.1rem' }}>Histórico de Previsiones (Desviaciones)</h3>
           </div>
           <div className="table-responsive">
-            <table>
+            <div style={{ overflowX: "auto" }}><table>
               <thead>
                 <tr>
                   <th>Fecha Objetivo</th>
@@ -353,7 +353,7 @@ export function ForecastDashboard() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       )}

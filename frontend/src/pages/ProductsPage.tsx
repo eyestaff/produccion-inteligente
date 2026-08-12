@@ -168,7 +168,7 @@ export function ProductsPage() {
             </button>
           </div>
           <div className="table-responsive">
-            <table>
+            <div style={{ overflowX: "auto" }}><table>
               <thead>
                 <tr>
                   <th>SKU</th>
@@ -209,7 +209,7 @@ export function ProductsPage() {
                   })
                 }
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       )}
@@ -224,7 +224,7 @@ export function ProductsPage() {
             </button>
           </div>
           <div className="table-responsive">
-            <table>
+            <div style={{ overflowX: "auto" }}><table>
               <thead>
                 <tr>
                   <th>ID</th>
@@ -244,7 +244,7 @@ export function ProductsPage() {
                   ))
                 }
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       )}

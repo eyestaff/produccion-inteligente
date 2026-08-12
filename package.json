@@ -20,14 +20,15 @@
     "dev:frontend": "vite --config frontend/vite.config.ts",
     "dev:worker": "wrangler dev --config worker/wrangler.toml --ip 127.0.0.1 --port 8787",
     "build:frontend": "vite build --config frontend/vite.config.ts",
-    "build": "wrangler build --config worker/wrangler.toml --env production",
+    "build": "npm run build:frontend && wrangler build --config worker/wrangler.toml --env production",
     "deploy": "npm run build:frontend && wrangler deploy --config worker/wrangler.toml --env production",
     "typecheck": "tsc --noEmit -p frontend/tsconfig.json",
     "lint": "eslint . --ext .js,.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "preview": "wrangler dev"
   },
   "lint-staged": {
     "*.{js,ts}": [
@@ -39,7 +40,7 @@
     ]
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20260804.1",
+    "@cloudflare/workers-types": "^5.20260812.1",
     "@types/node": "^20.0.0",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.1",
@@ -52,6 +53,6 @@
     "prettier": "^3.0.0",
     "typescript": "5.5.4",
     "vitest": "^1.0.0",
-    "wrangler": "^4.0.0"
+    "wrangler": "^4.121.0"
   }
 }
