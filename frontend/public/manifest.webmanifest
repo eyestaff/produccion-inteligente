@@ -8,9 +8,9 @@
   "description": "PWA de producción inteligente con Cloudflare Workers, D1 y R2.",
   "icons": [
     {
-      "src": "/icon.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml"
+      "src": "/logo-square.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ]
 }
