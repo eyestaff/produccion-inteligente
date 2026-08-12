@@ -314,7 +314,7 @@ export function DashboardPage() {
       </div>
 
       {/* Grid Inferior: Tiendas y Tablas */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+      <div className="dashboard-bottom-grid" style={{ display: 'grid', gap: '2rem' }}>
         {/* Producción por tienda y Estado */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           {/* Tiendas */}
