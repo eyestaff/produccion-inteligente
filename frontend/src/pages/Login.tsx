@@ -40,7 +40,24 @@ export function LoginPage() {
       }}
     >
       <div className="card" style={{ width: 400, padding: '2rem' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Producción Inteligente</h2>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: '1.75rem',
+          }}
+        >
+          <img
+            src="/logo-horizontal.png"
+            alt="Producción Inteligente"
+            style={{
+              maxHeight: '75px',
+              maxWidth: '100%',
+              objectFit: 'contain',
+            }}
+          />
+        </div>
 
         {error && (
           <div
