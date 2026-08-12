@@ -248,7 +248,7 @@ export class ProductionService {
         order.storeId,
         ingredientsOut,
         productsIn,
-      )
+      ),
     );
 
     // 2. Registrar mermas de producto final si hubo
@@ -260,13 +260,19 @@ export class ProductionService {
           type: 'out',
           quantityChange: -finalWaste,
           reason: 'breakage',
-        })
+        }),
       );
     }
 
     // 3. Finalización (Actualizar estado de la orden)
     statements.push(
-      buildUpdateProductionOrderStatusStatement(this.db, this.ctx, orderId, 'completed', finalQuantity)
+      buildUpdateProductionOrderStatusStatement(
+        this.db,
+        this.ctx,
+        orderId,
+        'completed',
+        finalQuantity,
+      ),
     );
 
     // EJECUCIÓN ATÓMICA GARANTIZADA

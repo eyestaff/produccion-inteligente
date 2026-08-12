@@ -73,9 +73,7 @@ beforeAll(() => {
     BREVO_API_KEY: 'test-brevo-key',
   };
 
-  db.exec(
-    `INSERT INTO companies (id, name, slug) VALUES (1, 'Test Company', 'test-company')`,
-  );
+  db.exec(`INSERT INTO companies (id, name, slug) VALUES (1, 'Test Company', 'test-company')`);
 
   db.exec(
     `INSERT INTO users (id, company_id, email, password_hash, password_salt)

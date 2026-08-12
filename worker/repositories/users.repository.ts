@@ -88,9 +88,7 @@ export async function createPasswordResetToken(
   expiresAt: number,
 ): Promise<void> {
   await db
-    .prepare(
-      'INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)',
-    )
+    .prepare('INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)')
     .bind(userId, tokenHash, expiresAt)
     .run();
 }

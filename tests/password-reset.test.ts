@@ -50,10 +50,7 @@ describe('Password Reset Flow', () => {
               if (normalized.includes('FROM password_reset_tokens')) {
                 return (
                   passwordResetTokensData.find(
-                    (t) =>
-                      t.tokenHash === args[0] &&
-                      t.usedAt === null &&
-                      t.expiresAt > args[1],
+                    (t) => t.tokenHash === args[0] && t.usedAt === null && t.expiresAt > args[1],
                   ) || null
                 );
               }
@@ -82,14 +79,8 @@ describe('Password Reset Flow', () => {
                 }
               }
 
-              if (
-                normalized.includes(
-                  'UPDATE password_reset_tokens SET used_at',
-                )
-              ) {
-                const token = passwordResetTokensData.find(
-                  (t) => t.id === args[1],
-                );
+              if (normalized.includes('UPDATE password_reset_tokens SET used_at')) {
+                const token = passwordResetTokensData.find((t) => t.id === args[1]);
 
                 if (token) {
                   token.usedAt = args[0];
@@ -113,41 +104,27 @@ describe('Password Reset Flow', () => {
   });
 
   it('rechaza una solicitud sin email', async () => {
-    const request = new Request(
-      'http://localhost/api/auth/forgot-password',
-      {
-        method: 'POST',
-        body: JSON.stringify({}),
-      },
-    );
+    const request = new Request('http://localhost/api/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
 
-    const response = await handleAuthRoute(
-      '/api/auth/forgot-password',
-      request,
-      env,
-    );
+    const response = await handleAuthRoute('/api/auth/forgot-password', request, env);
 
     expect(response?.status).toBe(400);
   });
 
   it('rechaza una contraseña demasiado corta', async () => {
-    const request = new Request(
-      'http://localhost/api/auth/reset-password',
-      {
-        method: 'POST',
-        body: JSON.stringify({
-          token: 'test-token',
-          newPassword: '1234567',
-          confirmPassword: '1234567',
-        }),
-      },
-    );
+    const request = new Request('http://localhost/api/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        token: 'test-token',
+        newPassword: '1234567',
+        confirmPassword: '1234567',
+      }),
+    });
 
-    const response = await handleAuthRoute(
-      '/api/auth/reset-password',
-      request,
-      env,
-    );
+    const response = await handleAuthRoute('/api/auth/reset-password', request, env);
 
     expect(response?.status).toBe(400);
   });
@@ -158,21 +135,14 @@ describe('Password Reset Flow', () => {
       messageId: 'test-message-id',
     });
 
-    const forgotRequest = new Request(
-      'http://localhost/api/auth/forgot-password',
-      {
-        method: 'POST',
-        body: JSON.stringify({
-          email: 'test@example.com',
-        }),
-      },
-    );
+    const forgotRequest = new Request('http://localhost/api/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: 'test@example.com',
+      }),
+    });
 
-    const forgotResponse = await handleAuthRoute(
-      '/api/auth/forgot-password',
-      forgotRequest,
-      env,
-    );
+    const forgotResponse = await handleAuthRoute('/api/auth/forgot-password', forgotRequest, env);
 
     expect(forgotResponse?.status).toBe(200);
     expect(passwordResetTokensData).toHaveLength(1);
@@ -183,9 +153,7 @@ describe('Password Reset Flow', () => {
     expect(emailOptions.to).toBe('test@example.com');
     expect(emailOptions.subject).toContain('Restablecer contraseña');
 
-    const match = emailOptions.html.match(
-      /\/reset-password\?token=([^"&<\s]+)/,
-    );
+    const match = emailOptions.html.match(/\/reset-password\?token=([^"&<\s]+)/);
 
     expect(match).not.toBeNull();
 
@@ -195,39 +163,29 @@ describe('Password Reset Flow', () => {
     expect(passwordResetTokensData[0].tokenHash).toHaveLength(64);
     expect(passwordResetTokensData[0].tokenHash).not.toBe(token);
 
-    const resetRequest = new Request(
-      'http://localhost/api/auth/reset-password',
-      {
-        method: 'POST',
-        body: JSON.stringify({
-          token,
-          newPassword: 'NuevaPassword123',
-          confirmPassword: 'NuevaPassword123',
-        }),
-      },
-    );
+    const resetRequest = new Request('http://localhost/api/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        token,
+        newPassword: 'NuevaPassword123',
+        confirmPassword: 'NuevaPassword123',
+      }),
+    });
 
-    const resetResponse = await handleAuthRoute(
-      '/api/auth/reset-password',
-      resetRequest,
-      env,
-    );
+    const resetResponse = await handleAuthRoute('/api/auth/reset-password', resetRequest, env);
 
     expect(resetResponse?.status).toBe(200);
     expect(passwordResetTokensData[0].usedAt).not.toBeNull();
     expect(usersData[0].passwordHash).not.toBe('');
 
-    const secondResetRequest = new Request(
-      'http://localhost/api/auth/reset-password',
-      {
-        method: 'POST',
-        body: JSON.stringify({
-          token,
-          newPassword: 'OtraPassword123',
-          confirmPassword: 'OtraPassword123',
-        }),
-      },
-    );
+    const secondResetRequest = new Request('http://localhost/api/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        token,
+        newPassword: 'OtraPassword123',
+        confirmPassword: 'OtraPassword123',
+      }),
+    });
 
     const secondResetResponse = await handleAuthRoute(
       '/api/auth/reset-password',

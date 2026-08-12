@@ -7,8 +7,7 @@ export function ReportsPage() {
         <p className="eyebrow">Reportes</p>
         <h1 style={{ margin: '0.25rem 0 0' }}>Centro de Reportes</h1>
         <p style={{ color: 'var(--muted)', marginTop: '0.5rem' }}>
-          Consulta, exporta y comparte información ejecutiva y operativa de
-          Producción Inteligente.
+          Consulta, exporta y comparte información ejecutiva y operativa de Producción Inteligente.
         </p>
       </div>
 
@@ -39,9 +38,7 @@ export function ReportsPage() {
           </div>
 
           <div>
-            <h2 style={{ margin: 0, fontSize: '1.1rem' }}>
-              Resumen Ejecutivo
-            </h2>
+            <h2 style={{ margin: 0, fontSize: '1.1rem' }}>Resumen Ejecutivo</h2>
             <p
               style={{
                 margin: '0.35rem 0 0',
@@ -49,8 +46,7 @@ export function ReportsPage() {
                 fontSize: '0.9rem',
               }}
             >
-              Situación, propuesta de valor, estado del desarrollo y próximos
-              pasos.
+              Situación, propuesta de valor, estado del desarrollo y próximos pasos.
             </p>
           </div>
         </div>

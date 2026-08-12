@@ -45,9 +45,7 @@ export async function runStatement(
     if (mode === 'all') {
       if (!boundStatement.all) return [];
       const result = await boundStatement.all();
-      return Array.isArray(result)
-        ? result
-        : ((result as any)?.results ?? []);
+      return Array.isArray(result) ? result : ((result as any)?.results ?? []);
     }
     return boundStatement.run ? await boundStatement.run() : undefined;
   }

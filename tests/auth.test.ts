@@ -1,10 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import type { Env } from '../worker';
 import { handleAuthRoute } from '../worker/routes/auth.routes';
-import {
-  hashPassword,
-  generateSalt,
-} from '../worker/services/auth.service';
+import { hashPassword, generateSalt } from '../worker/services/auth.service';
 
 describe('Auth API', () => {
   let env: Env;
@@ -36,10 +33,7 @@ describe('Auth API', () => {
               if (normalized.includes('FROM password_reset_tokens')) {
                 return (
                   passwordResetTokensData.find(
-                    (t) =>
-                      t.tokenHash === args[0] &&
-                      t.usedAt === null &&
-                      t.expiresAt > args[1],
+                    (t) => t.tokenHash === args[0] && t.usedAt === null && t.expiresAt > args[1],
                   ) || null
                 );
               }
@@ -93,14 +87,8 @@ describe('Auth API', () => {
                 }
               }
 
-              if (
-                normalized.includes(
-                  'UPDATE password_reset_tokens SET used_at',
-                )
-              ) {
-                const token = passwordResetTokensData.find(
-                  (t) => t.id === args[1],
-                );
+              if (normalized.includes('UPDATE password_reset_tokens SET used_at')) {
+                const token = passwordResetTokensData.find((t) => t.id === args[1]);
 
                 if (token) {
                   token.usedAt = args[0];
@@ -130,10 +118,7 @@ describe('Auth API', () => {
     const salt = generateSalt();
     const hash = await hashPassword('password123', salt);
 
-    await fakeDb
-      .prepare('INSERT INTO users')
-      .bind(1, 'test@example.com', hash, salt, 'user')
-      .run();
+    await fakeDb.prepare('INSERT INTO users').bind(1, 'test@example.com', hash, salt, 'user').run();
   });
 
   it('should login successfully with correct credentials', async () => {

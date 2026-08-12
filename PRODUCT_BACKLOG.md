@@ -29,19 +29,19 @@ Este documento representa el backlog funcional completo del producto, alineado c
 
 ### EP-4: Dashboards y Analítica Frontend
 
-| ID     | Feature        | User Story                                                                | Prioridad | Dependencias | Estado    | Sprint    |
-| ------ | -------------- | ------------------------------------------------------------------------- | --------- | ------------ | --------- | --------- |
+| ID     | Feature        | User Story                                                                | Prioridad | Dependencias | Estado     | Sprint    |
+| ------ | -------------- | ------------------------------------------------------------------------- | --------- | ------------ | ---------- | --------- |
 | US-401 | UI de Catálogo | Como usuario, quiero una interfaz web moderna para gestionar el catálogo. | Alta      | EP-1         | Completado | Sprint 10 |
 | US-402 | UI de Recetas  | Como usuario, quiero ver la composición de mis productos.                 | Alta      | EP-2         | Completado | Sprint 10 |
 
 ### EP-5: Inteligencia Artificial
 
-| ID     | Feature       | User Story                                                        | Prioridad | Dependencias | Estado    | Sprint    |
-| ------ | ------------- | ----------------------------------------------------------------- | --------- | ------------ | --------- | --------- |
+| ID     | Feature       | User Story                                                        | Prioridad | Dependencias | Estado     | Sprint    |
+| ------ | ------------- | ----------------------------------------------------------------- | --------- | ------------ | ---------- | --------- |
 | US-501 | Predicción IA | Como sistema, quiero ajustar el forecast dinámicamente usando IA. | Baja      | EP-3         | Completado | Sprint 12 |
 
 ### EP-6: Deuda Técnica Arquitectónica
 
-| ID       | Feature                | Requisito Técnico Obligatorio                                                               | Prioridad | Triggers Limitantes                             | Estado    | Sprint   |
-| -------- | ---------------------- | ------------------------------------------------------------------------------------------- | --------- | ----------------------------------------------- | --------- | -------- |
+| ID       | Feature                | Requisito Técnico Obligatorio                                                               | Prioridad | Triggers Limitantes                             | Estado     | Sprint   |
+| -------- | ---------------------- | ------------------------------------------------------------------------------------------- | --------- | ----------------------------------------------- | ---------- | -------- |
 | TECH-001 | Migración D1 Batch API | Refactorizar capa de repositorios para garantizar atomicidad pura de DB en el backflushing. | Crítica   | >25 tiendas, >10k órdenes, o liberación de v2.0 | Completado | Pre-v2.0 |

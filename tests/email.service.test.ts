@@ -50,9 +50,7 @@ describe('Email Service - Brevo', () => {
   });
 
   it('lanza error cuando Brevo devuelve un error HTTP', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response('Unauthorized', { status: 401 }),
-    );
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('Unauthorized', { status: 401 }));
 
     await expect(
       sendEmail(env, {

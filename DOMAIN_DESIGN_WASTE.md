@@ -11,6 +11,7 @@ El dominio de Mermas (Waste Logging) permite registrar y justificar el deterioro
 ## 3. Motivos de Merma (Waste Reasons)
 
 El dominio clasifica las mermas mediante un subconjunto cerrado de razones para su posterior analítica:
+
 - `caducity`: Vencimiento de materia prima o producto.
 - `overproduction`: Producto terminado no vendido que pierde su vida útil en exhibición.
 - `error`: Error humano durante la manipulación o preparación.
@@ -28,6 +29,7 @@ El dominio clasifica las mermas mediante un subconjunto cerrado de razones para 
 ## 5. Ciclo de vida
 
 Dado que su arquitectura está orientada a eventos directos en el Ledger:
+
 1. El operario o gerente identifica la merma físicamente.
 2. Ingresa al Dashboard y selecciona el producto y el motivo.
 3. El sistema impacta el inventario de forma síncrona.
@@ -57,7 +59,8 @@ Al igual que Producción, las mermas impactan fuertemente la tabla de transaccio
 
 ## 7. Estrategia de Pruebas
 
-La validez del dominio ya se encuentra garantizada mediante el archivo `api-waste.test.ts`. 
+La validez del dominio ya se encuentra garantizada mediante el archivo `api-waste.test.ts`.
 Se valida especialmente:
+
 - Que el inventario físico disponible se deduce acorde a la cantidad mermada.
 - Que el Dashboard de analítica de mermas devuelve correctamente agregaciones diarias y semanales mediante consultas SUM() sobre el Ledger.

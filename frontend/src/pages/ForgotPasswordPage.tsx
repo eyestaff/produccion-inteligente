@@ -33,15 +33,11 @@ export function ForgotPasswordPage() {
           background: 'var(--bg)',
         }}
       >
-        <div
-          className="card"
-          style={{ width: 420, padding: '2.5rem', textAlign: 'center' }}
-        >
+        <div className="card" style={{ width: 420, padding: '2.5rem', textAlign: 'center' }}>
           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✉️</div>
           <h2 style={{ margin: '0 0 0.75rem' }}>Revisa tu correo</h2>
           <p style={{ color: 'var(--muted)', lineHeight: 1.5 }}>
-            Si el correo está registrado, recibirás un enlace para restablecer
-            tu contraseña.
+            Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.
           </p>
           <button
             type="button"
@@ -93,9 +89,7 @@ export function ForgotPasswordPage() {
             PI
           </div>
 
-          <h2 style={{ margin: '0 0 0.35rem', fontSize: '1.35rem' }}>
-            Recuperar contraseña
-          </h2>
+          <h2 style={{ margin: '0 0 0.35rem', fontSize: '1.35rem' }}>Recuperar contraseña</h2>
 
           <p
             style={{
@@ -105,8 +99,8 @@ export function ForgotPasswordPage() {
               lineHeight: 1.5,
             }}
           >
-            Introduce tu correo electrónico y te enviaremos un enlace para
-            crear una nueva contraseña.
+            Introduce tu correo electrónico y te enviaremos un enlace para crear una nueva
+            contraseña.
           </p>
         </div>
 

@@ -60,9 +60,7 @@ export function ChangePasswordPage({ forced = false }: Props) {
         <div className="card" style={{ width: 420, padding: '2.5rem', textAlign: 'center' }}>
           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✅</div>
           <h2 style={{ margin: '0 0 0.5rem' }}>Contraseña actualizada</h2>
-          <p style={{ color: 'var(--muted)', margin: '0 0 1.5rem' }}>
-            Redirigiendo al dashboard…
-          </p>
+          <p style={{ color: 'var(--muted)', margin: '0 0 1.5rem' }}>Redirigiendo al dashboard…</p>
         </div>
       </div>
     );
@@ -125,12 +123,20 @@ export function ChangePasswordPage({ forced = false }: Props) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <form
+          onSubmit={handleSubmit}
+          style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
+        >
           {/* New password */}
           <div>
             <label
               htmlFor="new-password"
-              style={{ display: 'block', fontWeight: 600, marginBottom: '0.4rem', fontSize: '0.875rem' }}
+              style={{
+                display: 'block',
+                fontWeight: 600,
+                marginBottom: '0.4rem',
+                fontSize: '0.875rem',
+              }}
             >
               Nueva contraseña *
             </label>
@@ -157,7 +163,12 @@ export function ChangePasswordPage({ forced = false }: Props) {
           <div>
             <label
               htmlFor="confirm-password"
-              style={{ display: 'block', fontWeight: 600, marginBottom: '0.4rem', fontSize: '0.875rem' }}
+              style={{
+                display: 'block',
+                fontWeight: 600,
+                marginBottom: '0.4rem',
+                fontSize: '0.875rem',
+              }}
             >
               Confirmar contraseña *
             </label>
@@ -208,7 +219,12 @@ export function ChangePasswordPage({ forced = false }: Props) {
             type="submit"
             disabled={loading}
             className="btn-primary"
-            style={{ width: '100%', justifyContent: 'center', padding: '0.75rem', opacity: loading ? 0.7 : 1 }}
+            style={{
+              width: '100%',
+              justifyContent: 'center',
+              padding: '0.75rem',
+              opacity: loading ? 0.7 : 1,
+            }}
           >
             {loading ? 'Guardando…' : forced ? 'Establecer contraseña' : 'Cambiar contraseña'}
           </button>

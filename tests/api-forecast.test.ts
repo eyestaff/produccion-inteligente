@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, beforeEach } from 'vitest';
 import { router } from '../worker/router';
 import { Env } from '../worker/index';
 import Database from 'better-sqlite3';
@@ -33,30 +33,48 @@ async function seedData(db: any) {
   // 1. Company
   db.exec("INSERT INTO companies (name, slug) VALUES ('Test Company', 'test-company');");
   // 2. User
-  db.exec("INSERT INTO users (company_id, email, password_hash, password_salt) VALUES (1, 'test@example.com', 'hash', 'salt');");
+  db.exec(
+    "INSERT INTO users (company_id, email, password_hash, password_salt) VALUES (1, 'test@example.com', 'hash', 'salt');",
+  );
   // 3. Session
-  db.exec("INSERT INTO sessions (user_id, token, expires_at) VALUES (1, 'test-token', 9999999999999);");
+  db.exec(
+    "INSERT INTO sessions (user_id, token, expires_at) VALUES (1, 'test-token', 9999999999999);",
+  );
   // 4. Store
   db.exec("INSERT INTO stores (company_id, name, code) VALUES (1, 'Store 1', 'ST1');");
   // 5. Business Line
   db.exec("INSERT INTO business_lines (company_id, name, code) VALUES (1, 'Bakery', 'BAK');");
   // 6. Products
-  db.exec("INSERT INTO products (company_id, business_line_id, name, code, type) VALUES (1, 1, 'Croissant', 'CRO', 'finished_good');");
-  db.exec("INSERT INTO products (company_id, business_line_id, name, code, type) VALUES (1, 1, 'Harina', 'HAR', 'raw_material');");
+  db.exec(
+    "INSERT INTO products (company_id, business_line_id, name, code, type) VALUES (1, 1, 'Croissant', 'CRO', 'finished_good');",
+  );
+  db.exec(
+    "INSERT INTO products (company_id, business_line_id, name, code, type) VALUES (1, 1, 'Harina', 'HAR', 'raw_material');",
+  );
   // 7. Inventory
-  db.exec("INSERT INTO inventory (company_id, store_id, product_id, available_quantity) VALUES (1, 1, 1, 10);"); // Croissant
-  db.exec("INSERT INTO inventory (company_id, store_id, product_id, available_quantity) VALUES (1, 1, 2, 50);"); // Harina
+  db.exec(
+    'INSERT INTO inventory (company_id, store_id, product_id, available_quantity) VALUES (1, 1, 1, 10);',
+  ); // Croissant
+  db.exec(
+    'INSERT INTO inventory (company_id, store_id, product_id, available_quantity) VALUES (1, 1, 2, 50);',
+  ); // Harina
   // 8. Recipe for Croissant
-  db.exec("INSERT INTO recipes (company_id, product_id, name, status) VALUES (1, 1, 'Croissant Recipe', 'active');");
+  db.exec(
+    "INSERT INTO recipes (company_id, product_id, name, status) VALUES (1, 1, 'Croissant Recipe', 'active');",
+  );
   // 9. Consume past inventory for history
-  db.exec("INSERT INTO inventory_transactions (company_id, store_id, product_id, type, quantity_change, reason, created_by, source_module, created_at) VALUES (1, 1, 1, 'out', -150, 'sales', 1, 'Test', DATE('now', '-5 days'));"); // 150 sold in 7d
-  db.exec("INSERT INTO inventory_transactions (company_id, store_id, product_id, type, quantity_change, reason, created_by, source_module, created_at) VALUES (1, 1, 1, 'out', -600, 'sales', 1, 'Test', DATE('now', '-25 days'));"); // 600 sold before, total 750 in 30d
+  db.exec(
+    "INSERT INTO inventory_transactions (company_id, store_id, product_id, type, quantity_change, reason, created_by, source_module, created_at) VALUES (1, 1, 1, 'out', -150, 'sales', 1, 'Test', DATE('now', '-5 days'));",
+  ); // 150 sold in 7d
+  db.exec(
+    "INSERT INTO inventory_transactions (company_id, store_id, product_id, type, quantity_change, reason, created_by, source_module, created_at) VALUES (1, 1, 1, 'out', -600, 'sales', 1, 'Test', DATE('now', '-25 days'));",
+  ); // 600 sold before, total 750 in 30d
 }
 
 describe('Forecast API Integration', () => {
   let db: any;
   let env: Env;
-  
+
   beforeEach(async () => {
     db = createInMemoryDb();
     await setupDb(db);
@@ -75,7 +93,7 @@ describe('Forecast API Integration', () => {
       };
       return stmt;
     };
-    
+
     env = {
       DB: db as unknown as D1Database,
       ASSETS: null as any,
@@ -89,17 +107,17 @@ describe('Forecast API Integration', () => {
     const request = new Request('http://localhost/api/forecast/1/dashboard', {
       method: 'GET',
       headers: {
-        'Authorization': 'Bearer test-token'
-      }
+        Authorization: 'Bearer test-token',
+      },
     });
 
     const response = await router(request, env);
     expect(response.status).toBe(200);
-    
-    const data = await response.json() as any;
+
+    const data = (await response.json()) as any;
     expect(data.recommendations).toBeDefined();
     expect(data.risks).toBeDefined();
-    
+
     // Check Croissant recommendation
     const croissantRec = data.recommendations.find((r: any) => r.productId === 1);
     expect(croissantRec).toBeDefined();
@@ -112,8 +130,8 @@ describe('Forecast API Integration', () => {
     const request = new Request('http://localhost/api/forecast/1/approve', {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer test-token',
-        'Content-Type': 'application/json'
+        Authorization: 'Bearer test-token',
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         targetDate: '2026-08-15',
@@ -123,25 +141,27 @@ describe('Forecast API Integration', () => {
             type: 'produce',
             historicalBase: 25,
             suggestedQuantity: 30,
-            adjustedQuantity: 30 // Will produce 30
-          }
-        ]
-      })
+            adjustedQuantity: 30, // Will produce 30
+          },
+        ],
+      }),
     });
 
     const response = await router(request, env);
     expect(response.status).toBe(201);
-    
-    const data = await response.json() as any;
+
+    const data = (await response.json()) as any;
     expect(data.success).toBe(true);
     expect(data.forecastId).toBeDefined();
-    
+
     // Verify forecast was saved
     const forecastRows = db.prepare('SELECT * FROM forecasts WHERE id = ?').all(data.forecastId);
     expect(forecastRows.length).toBe(1);
-    
+
     // Verify production order was created
-    const poRows = db.prepare('SELECT * FROM production_orders WHERE company_id = 1 AND store_id = 1').all();
+    const poRows = db
+      .prepare('SELECT * FROM production_orders WHERE company_id = 1 AND store_id = 1')
+      .all();
     expect(poRows.length).toBe(1);
     expect(poRows[0].status).toBe('planned');
   });

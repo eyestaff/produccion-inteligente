@@ -10,9 +10,9 @@ import { EmptyState } from '../ui/EmptyState';
 const UNITS = ['u', 'kg', 'g', 'l', 'ml', 'cL', 'mg'];
 
 const STATUS_META: Record<string, { label: string; bg: string; color: string }> = {
-  active:   { label: 'Activa',    bg: '#d1fae5', color: '#065f46' },
-  draft:    { label: 'Borrador',  bg: '#fef3c7', color: '#92400e' },
-  inactive: { label: 'Inactiva',  bg: '#f3f4f6', color: '#6b7280' },
+  active: { label: 'Activa', bg: '#d1fae5', color: '#065f46' },
+  draft: { label: 'Borrador', bg: '#fef3c7', color: '#92400e' },
+  inactive: { label: 'Inactiva', bg: '#f3f4f6', color: '#6b7280' },
 };
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
@@ -20,14 +20,16 @@ const STATUS_META: Record<string, { label: string; bg: string; color: string }> 
 function StatusBadge({ status }: { status: string }) {
   const meta = STATUS_META[status] ?? STATUS_META.draft;
   return (
-    <span style={{
-      padding: '2px 8px',
-      borderRadius: '12px',
-      fontSize: '0.72rem',
-      fontWeight: 600,
-      background: meta.bg,
-      color: meta.color,
-    }}>
+    <span
+      style={{
+        padding: '2px 8px',
+        borderRadius: '12px',
+        fontSize: '0.72rem',
+        fontWeight: 600,
+        background: meta.bg,
+        color: meta.color,
+      }}
+    >
       {meta.label}
     </span>
   );
@@ -138,7 +140,12 @@ function AddIngredientForm({ recipeId, products, onAdded }: AddIngredientFormPro
         <select
           value={productId}
           onChange={(e) => setProductId(e.target.value)}
-          style={{ padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '6px', background: 'white' }}
+          style={{
+            padding: '0.5rem',
+            border: '1px solid var(--border)',
+            borderRadius: '6px',
+            background: 'white',
+          }}
         >
           <option value="">— Seleccionar —</option>
           {products.map((p) => (
@@ -171,10 +178,17 @@ function AddIngredientForm({ recipeId, products, onAdded }: AddIngredientFormPro
         <select
           value={unit}
           onChange={(e) => setUnit(e.target.value)}
-          style={{ padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '6px', background: 'white' }}
+          style={{
+            padding: '0.5rem',
+            border: '1px solid var(--border)',
+            borderRadius: '6px',
+            background: 'white',
+          }}
         >
           {UNITS.map((u) => (
-            <option key={u} value={u}>{u}</option>
+            <option key={u} value={u}>
+              {u}
+            </option>
           ))}
         </select>
       </div>
@@ -232,7 +246,9 @@ function RecipeDetailModal({ recipe, products, onClose, onUpdated }: RecipeDetai
     }
   }, [recipe.id, toast]);
 
-  useEffect(() => { loadDetail(); }, [loadDetail]);
+  useEffect(() => {
+    loadDetail();
+  }, [loadDetail]);
 
   const handleSaveHeader = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -308,15 +324,25 @@ function RecipeDetailModal({ recipe, products, onClose, onUpdated }: RecipeDetai
         }}
       >
         {/* Header */}
-        <div style={{
-          padding: '1.5rem 1.5rem 1rem',
-          borderBottom: '1px solid var(--border)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-        }}>
+        <div
+          style={{
+            padding: '1.5rem 1.5rem 1rem',
+            borderBottom: '1px solid var(--border)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+          }}
+        >
           <div>
-            <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <p
+              style={{
+                margin: 0,
+                fontSize: '0.75rem',
+                color: 'var(--muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+              }}
+            >
               Editar Receta
             </p>
             <h2 style={{ margin: '0.25rem 0 0', fontSize: '1.25rem' }}>
@@ -325,7 +351,14 @@ function RecipeDetailModal({ recipe, products, onClose, onUpdated }: RecipeDetai
           </div>
           <button
             onClick={onClose}
-            style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: 'var(--muted)', lineHeight: 1 }}
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '1.25rem',
+              cursor: 'pointer',
+              color: 'var(--muted)',
+              lineHeight: 1,
+            }}
           >
             ✕
           </button>
@@ -334,19 +367,25 @@ function RecipeDetailModal({ recipe, products, onClose, onUpdated }: RecipeDetai
         <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {/* Edit Header Form */}
           <form onSubmit={handleSaveHeader}>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '2fr 1fr 1fr',
-              gap: '1rem',
-              marginBottom: '1rem',
-            }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '2fr 1fr 1fr',
+                gap: '1rem',
+                marginBottom: '1rem',
+              }}
+            >
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                 <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Nombre de la receta *</label>
                 <input
                   required
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  style={{ padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '6px' }}
+                  style={{
+                    padding: '0.5rem',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                  }}
                 />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
@@ -358,7 +397,11 @@ function RecipeDetailModal({ recipe, products, onClose, onUpdated }: RecipeDetai
                   step="0.001"
                   value={editYield}
                   onChange={(e) => setEditYield(e.target.value)}
-                  style={{ padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '6px' }}
+                  style={{
+                    padding: '0.5rem',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                  }}
                 />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
@@ -366,7 +409,12 @@ function RecipeDetailModal({ recipe, products, onClose, onUpdated }: RecipeDetai
                 <select
                   value={editStatus}
                   onChange={(e) => setEditStatus(e.target.value)}
-                  style={{ padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '6px', background: 'white' }}
+                  style={{
+                    padding: '0.5rem',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    background: 'white',
+                  }}
                 >
                   <option value="draft">Borrador</option>
                   <option value="active">Activa</option>
@@ -388,19 +436,30 @@ function RecipeDetailModal({ recipe, products, onClose, onUpdated }: RecipeDetai
 
           {/* Ingredients Section */}
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '0.75rem',
+              }}
+            >
               <h3 style={{ margin: 0, fontSize: '1rem' }}>Ingredientes (BOM)</h3>
               {detail && (
                 <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
                   Coste estimado:{' '}
-                  <strong style={{ color: 'var(--text)' }}>€{estimatedCost.toFixed(2)}</strong>
-                  {' '}/ {detail.yieldQuantity} uds → €{(estimatedCost / detail.yieldQuantity).toFixed(4)}/ud
+                  <strong style={{ color: 'var(--text)' }}>€{estimatedCost.toFixed(2)}</strong> /{' '}
+                  {detail.yieldQuantity} uds → €{(estimatedCost / detail.yieldQuantity).toFixed(4)}
+                  /ud
                 </span>
               )}
             </div>
 
             {loading ? (
-              <><SkeletonRow /><SkeletonRow /></>
+              <>
+                <SkeletonRow />
+                <SkeletonRow />
+              </>
             ) : !detail || detail.items.length === 0 ? (
               <p style={{ color: 'var(--muted)', fontSize: '0.875rem', padding: '1rem 0' }}>
                 Sin ingredientes. Añade al menos uno.
@@ -409,7 +468,13 @@ function RecipeDetailModal({ recipe, products, onClose, onUpdated }: RecipeDetai
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
                   <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border)', textAlign: 'left', color: 'var(--muted)' }}>
+                    <tr
+                      style={{
+                        borderBottom: '2px solid var(--border)',
+                        textAlign: 'left',
+                        color: 'var(--muted)',
+                      }}
+                    >
                       <th style={{ padding: '0.5rem' }}>Ingrediente</th>
                       <th style={{ padding: '0.5rem', textAlign: 'right' }}>Cantidad</th>
                       <th style={{ padding: '0.5rem' }}>Unidad</th>
@@ -431,11 +496,7 @@ function RecipeDetailModal({ recipe, products, onClose, onUpdated }: RecipeDetai
             )}
 
             {/* Add Ingredient */}
-            <AddIngredientForm
-              recipeId={recipe.id}
-              products={products}
-              onAdded={loadDetail}
-            />
+            <AddIngredientForm recipeId={recipe.id} products={products} onAdded={loadDetail} />
           </div>
         </div>
       </div>
@@ -508,7 +569,8 @@ function CreateRecipeModal({ products, onClose, onCreated }: CreateRecipeModalPr
     }
     // Circular BOM: ingredient cannot be the same as the finished product
     const circularItem = ingredients.find((row) => row.productId === productId);
-    if (circularItem) return 'Un ingrediente no puede ser el mismo producto terminado (BOM circular)';
+    if (circularItem)
+      return 'Un ingrediente no puede ser el mismo producto terminado (BOM circular)';
     return null;
   };
 
@@ -551,14 +613,20 @@ function CreateRecipeModal({ products, onClose, onCreated }: CreateRecipeModalPr
       toast(err.message || 'Error al crear la receta', 'error');
       // If recipe was created but items failed, clean up
       if (createdRecipeId) {
-        try { await RecipesAPI.delete(createdRecipeId); } catch { /* ignore */ }
+        try {
+          await RecipesAPI.delete(createdRecipeId);
+        } catch {
+          /* ignore */
+        }
       }
     } finally {
       setSaving(false);
     }
   };
 
-  const finishedGoods = products.filter((p) => p.type === 'finished_good' || p.type === 'sub_assembly');
+  const finishedGoods = products.filter(
+    (p) => p.type === 'finished_good' || p.type === 'sub_assembly',
+  );
   const rawMaterials = products.filter((p) => p.type === 'raw_material');
   // If no raw materials, allow all products as ingredients
   const ingredientCandidates = rawMaterials.length > 0 ? rawMaterials : products;
@@ -578,31 +646,60 @@ function CreateRecipeModal({ products, onClose, onCreated }: CreateRecipeModalPr
         }}
       >
         {/* Header */}
-        <div style={{
-          padding: '1.5rem 1.5rem 1rem',
-          borderBottom: '1px solid var(--border)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
+        <div
+          style={{
+            padding: '1.5rem 1.5rem 1rem',
+            borderBottom: '1px solid var(--border)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <div>
-            <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <p
+              style={{
+                margin: 0,
+                fontSize: '0.75rem',
+                color: 'var(--muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+              }}
+            >
               Nueva Receta
             </p>
-            <h2 style={{ margin: '0.25rem 0 0', fontSize: '1.25rem' }}>Constructor de Receta / BOM</h2>
+            <h2 style={{ margin: '0.25rem 0 0', fontSize: '1.25rem' }}>
+              Constructor de Receta / BOM
+            </h2>
           </div>
           <button
             onClick={onClose}
-            style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: 'var(--muted)' }}
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '1.25rem',
+              cursor: 'pointer',
+              color: 'var(--muted)',
+            }}
           >
             ✕
           </button>
         </div>
 
-        <form onSubmit={handleCreate} style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <form
+          onSubmit={handleCreate}
+          style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
+        >
           {/* Section 1: Product + header */}
           <div>
-            <h4 style={{ margin: '0 0 1rem', fontSize: '0.875rem', textTransform: 'uppercase', color: 'var(--muted)', letterSpacing: '0.06em' }}>
+            <h4
+              style={{
+                margin: '0 0 1rem',
+                fontSize: '0.875rem',
+                textTransform: 'uppercase',
+                color: 'var(--muted)',
+                letterSpacing: '0.06em',
+              }}
+            >
               1 · Producto terminado
             </h4>
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '1rem' }}>
@@ -611,17 +708,25 @@ function CreateRecipeModal({ products, onClose, onCreated }: CreateRecipeModalPr
                 <select
                   value={productId}
                   onChange={(e) => handleProductChange(e.target.value)}
-                  style={{ padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '6px', background: 'white' }}
+                  style={{
+                    padding: '0.5rem',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    background: 'white',
+                  }}
                 >
                   <option value="">— Seleccionar —</option>
                   {finishedGoods.length > 0
                     ? finishedGoods.map((p) => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
                       ))
                     : products.map((p) => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
-                      ))
-                  }
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
+                      ))}
                 </select>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
@@ -630,7 +735,11 @@ function CreateRecipeModal({ products, onClose, onCreated }: CreateRecipeModalPr
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ej: Receta Croissant"
-                  style={{ padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '6px' }}
+                  style={{
+                    padding: '0.5rem',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                  }}
                 />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
@@ -642,9 +751,23 @@ function CreateRecipeModal({ products, onClose, onCreated }: CreateRecipeModalPr
                     step="0.001"
                     value={yieldQty}
                     onChange={(e) => setYieldQty(e.target.value)}
-                    style={{ padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '6px', flex: 1 }}
+                    style={{
+                      padding: '0.5rem',
+                      border: '1px solid var(--border)',
+                      borderRadius: '6px',
+                      flex: 1,
+                    }}
                   />
-                  <span style={{ padding: '0.5rem', color: 'var(--muted)', fontSize: '0.8rem', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
+                  <span
+                    style={{
+                      padding: '0.5rem',
+                      color: 'var(--muted)',
+                      fontSize: '0.8rem',
+                      whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
                     uds
                   </span>
                 </div>
@@ -654,8 +777,23 @@ function CreateRecipeModal({ products, onClose, onCreated }: CreateRecipeModalPr
 
           {/* Section 2: Ingredients */}
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-              <h4 style={{ margin: 0, fontSize: '0.875rem', textTransform: 'uppercase', color: 'var(--muted)', letterSpacing: '0.06em' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '0.75rem',
+              }}
+            >
+              <h4
+                style={{
+                  margin: 0,
+                  fontSize: '0.875rem',
+                  textTransform: 'uppercase',
+                  color: 'var(--muted)',
+                  letterSpacing: '0.06em',
+                }}
+              >
                 2 · Ingredientes (BOM)
               </h4>
               <button
@@ -676,17 +814,19 @@ function CreateRecipeModal({ products, onClose, onCreated }: CreateRecipeModalPr
             </div>
 
             {/* Header row */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '2fr 1fr 1fr 36px',
-              gap: '0.5rem',
-              marginBottom: '0.5rem',
-              fontSize: '0.72rem',
-              fontWeight: 600,
-              color: 'var(--muted)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-            }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '2fr 1fr 1fr 36px',
+                gap: '0.5rem',
+                marginBottom: '0.5rem',
+                fontSize: '0.72rem',
+                fontWeight: 600,
+                color: 'var(--muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+              }}
+            >
               <span>Ingrediente</span>
               <span>Cantidad</span>
               <span>Unidad</span>
@@ -707,7 +847,12 @@ function CreateRecipeModal({ products, onClose, onCreated }: CreateRecipeModalPr
                 <select
                   value={row.productId}
                   onChange={(e) => updateIngredientLine(index, 'productId', e.target.value)}
-                  style={{ padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '6px', background: 'white' }}
+                  style={{
+                    padding: '0.5rem',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    background: 'white',
+                  }}
                 >
                   <option value="">— Ingrediente —</option>
                   {ingredientCandidates.map((p) => (
@@ -723,15 +868,26 @@ function CreateRecipeModal({ products, onClose, onCreated }: CreateRecipeModalPr
                   value={row.quantity}
                   onChange={(e) => updateIngredientLine(index, 'quantity', e.target.value)}
                   placeholder="0.00"
-                  style={{ padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '6px' }}
+                  style={{
+                    padding: '0.5rem',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                  }}
                 />
                 <select
                   value={row.unit}
                   onChange={(e) => updateIngredientLine(index, 'unit', e.target.value)}
-                  style={{ padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '6px', background: 'white' }}
+                  style={{
+                    padding: '0.5rem',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    background: 'white',
+                  }}
                 >
                   {UNITS.map((u) => (
-                    <option key={u} value={u}>{u}</option>
+                    <option key={u} value={u}>
+                      {u}
+                    </option>
                   ))}
                 </select>
                 <button
@@ -760,7 +916,15 @@ function CreateRecipeModal({ products, onClose, onCreated }: CreateRecipeModalPr
           </div>
 
           {/* Actions */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border)' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '1rem',
+              paddingTop: '0.5rem',
+              borderTop: '1px solid var(--border)',
+            }}
+          >
             <button
               type="button"
               onClick={onClose}
@@ -815,12 +979,19 @@ function DeleteConfirmModal({ recipe, onConfirm, onCancel, deleting }: DeleteCon
       >
         <h3 style={{ margin: '0 0 0.5rem' }}>¿Eliminar receta?</h3>
         <p style={{ color: 'var(--muted)', fontSize: '0.9rem', margin: '0 0 1.5rem' }}>
-          Se eliminará <strong>"{recipe.name}"</strong> y todos sus ingredientes. Esta acción no se puede deshacer.
+          Se eliminará <strong>"{recipe.name}"</strong> y todos sus ingredientes. Esta acción no se
+          puede deshacer.
         </p>
         <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
           <button
             onClick={onCancel}
-            style={{ padding: '0.5rem 1rem', border: '1px solid var(--border)', borderRadius: '6px', background: 'white', cursor: 'pointer' }}
+            style={{
+              padding: '0.5rem 1rem',
+              border: '1px solid var(--border)',
+              borderRadius: '6px',
+              background: 'white',
+              cursor: 'pointer',
+            }}
           >
             Cancelar
           </button>
@@ -876,7 +1047,9 @@ export function RecipesPage() {
     }
   }, [toast]);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleDelete = async () => {
     if (!deletingRecipe) return;
@@ -925,18 +1098,32 @@ export function RecipesPage() {
             {recipes.length} recetas totales · {activeCount} activas
           </p>
         </div>
-        <button
-          id="btn-new-recipe"
-          className="btn-primary"
-          onClick={() => setShowCreate(true)}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <button id="btn-new-recipe" className="btn-primary" onClick={() => setShowCreate(true)}>
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
           Nueva Receta
         </button>
       </div>
 
       {/* KPI summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem' }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+          gap: '1rem',
+        }}
+      >
         <article className="kpi-card">
           <span className="kpi-label">Total recetas</span>
           <strong className="kpi-value">{loading ? '…' : recipes.length}</strong>
@@ -944,12 +1131,16 @@ export function RecipesPage() {
         </article>
         <article className="kpi-card">
           <span className="kpi-label">Activas</span>
-          <strong className="kpi-value" style={{ color: '#059669' }}>{loading ? '…' : activeCount}</strong>
+          <strong className="kpi-value" style={{ color: '#059669' }}>
+            {loading ? '…' : activeCount}
+          </strong>
           <p className="kpi-detail">Disponibles para producción</p>
         </article>
         <article className="kpi-card">
           <span className="kpi-label">Borradores</span>
-          <strong className="kpi-value" style={{ color: '#d97706' }}>{loading ? '…' : draftCount}</strong>
+          <strong className="kpi-value" style={{ color: '#d97706' }}>
+            {loading ? '…' : draftCount}
+          </strong>
           <p className="kpi-detail">Pendientes de activar</p>
         </article>
         <article className="kpi-card">
@@ -979,15 +1170,15 @@ export function RecipesPage() {
           }}
         />
         <div className="tabs">
-        {(['all', 'active', 'draft', 'inactive'] as const).map((s) => (
-          <button
-            key={s}
-            onClick={() => setFilterStatus(s)}
-            className={`tab-btn ${filterStatus === s ? 'active' : ''}`}
-          >
-            {s === 'all' ? 'Todas' : STATUS_META[s]?.label ?? s}
-          </button>
-        ))}
+          {(['all', 'active', 'draft', 'inactive'] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setFilterStatus(s)}
+              className={`tab-btn ${filterStatus === s ? 'active' : ''}`}
+            >
+              {s === 'all' ? 'Todas' : (STATUS_META[s]?.label ?? s)}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -1009,7 +1200,19 @@ export function RecipesPage() {
             </p>
             {recipes.length === 0 && (
               <button className="btn-primary mt-4" onClick={() => setShowCreate(true)}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
                 Nueva Receta
               </button>
             )}
@@ -1035,8 +1238,12 @@ export function RecipesPage() {
                       borderBottom: '1px solid var(--border)',
                       transition: 'background 0.1s',
                     }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--panel-muted)'; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = ''; }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = 'var(--panel-muted)';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = '';
+                    }}
                   >
                     <td style={{ padding: '0.875rem 1rem', fontWeight: 600, color: 'var(--text)' }}>
                       {r.productName}
@@ -1048,7 +1255,13 @@ export function RecipesPage() {
                     <td style={{ padding: '0.875rem 1rem', textAlign: 'right', fontWeight: 500 }}>
                       {r.yieldQuantity} uds
                     </td>
-                    <td style={{ padding: '0.875rem 1rem', textAlign: 'right', color: 'var(--muted)' }}>
+                    <td
+                      style={{
+                        padding: '0.875rem 1rem',
+                        textAlign: 'right',
+                        color: 'var(--muted)',
+                      }}
+                    >
                       v{r.version}
                     </td>
                     <td style={{ padding: '0.875rem 1rem', textAlign: 'center' }}>

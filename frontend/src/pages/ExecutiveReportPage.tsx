@@ -26,13 +26,9 @@ export function ExecutiveReportPage() {
             Reporte interno
           </p>
 
-          <h1 style={{ margin: '0.4rem 0 0' }}>
-            Resumen Ejecutivo
-          </h1>
+          <h1 style={{ margin: '0.4rem 0 0' }}>Resumen Ejecutivo</h1>
 
-          <p style={{ color: 'var(--muted)', marginBottom: 0 }}>
-            Producción Inteligente
-          </p>
+          <p style={{ color: 'var(--muted)', marginBottom: 0 }}>Producción Inteligente</p>
         </div>
 
         <FileText size={28} />
@@ -41,24 +37,23 @@ export function ExecutiveReportPage() {
       <section className="card" style={{ padding: '1.5rem' }}>
         <h2>Resumen ejecutivo</h2>
         <p>
-          Producción Inteligente es una plataforma SaaS orientada a mejorar la
-          planificación, control y trazabilidad de las operaciones productivas.
-          Su propósito es ayudar a las empresas a producir mejor, reducir
-          desperdicios y tomar decisiones operativas basadas en información.
+          Producción Inteligente es una plataforma SaaS orientada a mejorar la planificación,
+          control y trazabilidad de las operaciones productivas. Su propósito es ayudar a las
+          empresas a producir mejor, reducir desperdicios y tomar decisiones operativas basadas en
+          información.
         </p>
         <p>
-          La solución integra procesos de forecast, producción, inventario,
-          compras, recetas, productos y gestión de mermas dentro de una misma
-          plataforma.
+          La solución integra procesos de forecast, producción, inventario, compras, recetas,
+          productos y gestión de mermas dentro de una misma plataforma.
         </p>
       </section>
 
       <section className="card" style={{ padding: '1.5rem' }}>
         <h2>Objetivo del proyecto</h2>
         <p>
-          Construir una herramienta SaaS que permita a empresas con operaciones
-          productivas planificar su producción, controlar inventarios,
-          gestionar mermas y mejorar la trazabilidad de sus operaciones.
+          Construir una herramienta SaaS que permita a empresas con operaciones productivas
+          planificar su producción, controlar inventarios, gestionar mermas y mejorar la
+          trazabilidad de sus operaciones.
         </p>
       </section>
 
@@ -76,9 +71,9 @@ export function ExecutiveReportPage() {
       <section className="card" style={{ padding: '1.5rem' }}>
         <h2>Propuesta de valor</h2>
         <p>
-          La promesa básica de Producción Inteligente es convertir los datos
-          operativos en decisiones concretas de producción, ayudando a producir
-          lo necesario, controlar el inventario y reducir las pérdidas.
+          La promesa básica de Producción Inteligente es convertir los datos operativos en
+          decisiones concretas de producción, ayudando a producir lo necesario, controlar el
+          inventario y reducir las pérdidas.
         </p>
       </section>
 
@@ -97,9 +92,9 @@ export function ExecutiveReportPage() {
       <section className="card" style={{ padding: '1.5rem' }}>
         <h2>Situación actual del desarrollo</h2>
         <p>
-          El proyecto cuenta actualmente con una arquitectura SaaS funcional
-          basada en React, Cloudflare Workers y D1, con autenticación,
-          multiempresa y módulos operativos principales implementados.
+          El proyecto cuenta actualmente con una arquitectura SaaS funcional basada en React,
+          Cloudflare Workers y D1, con autenticación, multiempresa y módulos operativos principales
+          implementados.
         </p>
 
         <div
@@ -117,8 +112,7 @@ export function ExecutiveReportPage() {
               color: 'var(--muted)',
             }}
           >
-            El porcentaje global debe actualizarse conforme se incorporen y
-            validen nuevos módulos.
+            El porcentaje global debe actualizarse conforme se incorporen y validen nuevos módulos.
           </p>
         </div>
       </section>
@@ -143,11 +137,7 @@ export function ExecutiveReportPage() {
           gap: '0.75rem',
         }}
       >
-        <button
-          type="button"
-          className="btn-primary no-print"
-          onClick={() => window.print()}
-        >
+        <button type="button" className="btn-primary no-print" onClick={() => window.print()}>
           <Download size={16} />
           Exportar PDF
         </button>

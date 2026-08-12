@@ -23,13 +23,13 @@ El dominio de Forecast tiene como objetivo predecir de forma inteligente las ven
   - **Sugerencia Teórica:** `(Base Histórica * (1 + Tendencia)) + Margen de Seguridad (5%)`.
   - **Requerimiento Real:** `Sugerencia Teórica - Inventario Disponible - Pedidos Pendientes + Mermas Recientes a Compensar`.
 - **Inmutabilidad Post-Aprobación:** Un Forecast aprobado no se recalcula, se ejecuta convirtiendo sus sugerencias mayores a 0 en `ProductionOrders` u `Órdenes de Compra`.
-- **Protección contra Falsos Positivos:** Los consumos generados por "ajustes manuales" o "mermas" no cuentan para el histórico de *ventas* normal, aunque las mermas recientes de 48h sí suman a la reposición de emergencia.
+- **Protección contra Falsos Positivos:** Los consumos generados por "ajustes manuales" o "mermas" no cuentan para el histórico de _ventas_ normal, aunque las mermas recientes de 48h sí suman a la reposición de emergencia.
 
 ## 5. Ciclo de vida
 
 - `draft`: (En memoria) El motor genera recomendaciones on-the-fly a partir del Snapshot actual del inventario y ledger.
 - `approved`: El analista revisa las sugerencias, ajusta cantidades si lo desea, y confirma el forecast guardándolo en la base de datos.
-- *(Acción Consecuente)*: Inmediatamente tras aprobarse, las cantidades que implican manufactura generan automáticamente `ProductionOrders` en estado `planned`.
+- _(Acción Consecuente)_: Inmediatamente tras aprobarse, las cantidades que implican manufactura generan automáticamente `ProductionOrders` en estado `planned`.
 
 ## 6. Respuestas a las 4 Preguntas Obligatorias del Proyecto
 

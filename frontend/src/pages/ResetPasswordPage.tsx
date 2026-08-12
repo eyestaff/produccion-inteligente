@@ -55,15 +55,10 @@ export function ResetPasswordPage() {
           background: 'var(--bg)',
         }}
       >
-        <div
-          className="card"
-          style={{ width: 420, padding: '2.5rem', textAlign: 'center' }}
-        >
+        <div className="card" style={{ width: 420, padding: '2.5rem', textAlign: 'center' }}>
           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✓</div>
 
-          <h2 style={{ margin: '0 0 0.75rem' }}>
-            Contraseña actualizada
-          </h2>
+          <h2 style={{ margin: '0 0 0.75rem' }}>Contraseña actualizada</h2>
 
           <p style={{ color: 'var(--muted)', lineHeight: 1.5 }}>
             Tu contraseña se ha actualizado correctamente.
@@ -119,9 +114,7 @@ export function ResetPasswordPage() {
             PI
           </div>
 
-          <h2 style={{ margin: '0 0 0.35rem', fontSize: '1.35rem' }}>
-            Nueva contraseña
-          </h2>
+          <h2 style={{ margin: '0 0 0.35rem', fontSize: '1.35rem' }}>Nueva contraseña</h2>
 
           <p
             style={{

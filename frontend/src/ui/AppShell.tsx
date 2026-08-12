@@ -19,15 +19,27 @@ export function AppShell({ title }: AppShellProps) {
   const currentTitle = useMemo(() => getPageTitle(location.pathname), [location.pathname]);
 
   return (
-    <div className={classNames('app-shell', theme === 'dark' && 'theme-dark', sidebarCollapsed && 'app-shell--collapsed')}>
+    <div
+      className={classNames(
+        'app-shell',
+        theme === 'dark' && 'theme-dark',
+        sidebarCollapsed && 'app-shell--collapsed',
+      )}
+    >
       {mobileMenuOpen && (
-        <div 
-          className="modal-overlay" 
-          style={{ zIndex: 5 }} 
-          onClick={() => setMobileMenuOpen(false)} 
+        <div
+          className="modal-overlay"
+          style={{ zIndex: 5 }}
+          onClick={() => setMobileMenuOpen(false)}
         />
       )}
-      <aside className={classNames('sidebar', sidebarCollapsed && 'sidebar--collapsed', mobileMenuOpen && 'sidebar--mobile-open')}>
+      <aside
+        className={classNames(
+          'sidebar',
+          sidebarCollapsed && 'sidebar--collapsed',
+          mobileMenuOpen && 'sidebar--mobile-open',
+        )}
+      >
         <div className="sidebar__brand">
           <div className="brand-mark">
             <img src="/logo-square.png" alt="PI" />
@@ -40,7 +52,11 @@ export function AppShell({ title }: AppShellProps) {
           )}
         </div>
 
-        <button type="button" className="icon-button" onClick={() => setSidebarCollapsed((value) => !value)}>
+        <button
+          type="button"
+          className="icon-button"
+          onClick={() => setSidebarCollapsed((value) => !value)}
+        >
           {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </button>
 
@@ -53,7 +69,9 @@ export function AppShell({ title }: AppShellProps) {
               title={route.title}
               onClick={() => setMobileMenuOpen(false)}
             >
-              <span>{sidebarCollapsed && !mobileMenuOpen ? route.title.charAt(0) : route.title}</span>
+              <span>
+                {sidebarCollapsed && !mobileMenuOpen ? route.title.charAt(0) : route.title}
+              </span>
             </NavLink>
           ))}
         </nav>
@@ -70,25 +88,60 @@ export function AppShell({ title }: AppShellProps) {
               <h2>{title ?? currentTitle}</h2>
             </div>
           </div>
-          <div className="header__actions desktop-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div
+            className="header__actions desktop-actions"
+            style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}
+          >
             <div className="search-bar" style={{ position: 'relative' }}>
-              <Search size={18} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
-              <input type="search" placeholder="Buscar..." style={{ padding: '0.5rem 1rem 0.5rem 2.5rem', borderRadius: '20px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }} />
+              <Search
+                size={18}
+                style={{
+                  position: 'absolute',
+                  left: '10px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'var(--muted)',
+                }}
+              />
+              <input
+                type="search"
+                placeholder="Buscar..."
+                style={{
+                  padding: '0.5rem 1rem 0.5rem 2.5rem',
+                  borderRadius: '20px',
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg)',
+                  color: 'var(--text)',
+                }}
+              />
             </div>
-            <button type="button" className="theme-toggle icon-button" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+            <button
+              type="button"
+              className="theme-toggle icon-button"
+              onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            >
               {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
-            <button 
-              type="button" 
-              className="icon-button" 
+            <button
+              type="button"
+              className="icon-button"
               onClick={() => {
                 import('../services/api').then(({ logout }) => logout());
               }}
               title="Cerrar sesión"
-              style={{ border: '1px solid var(--border)', background: 'var(--panel)', color: 'var(--text)', padding: '0.6rem 0.9rem', borderRadius: '999px', cursor: 'pointer' }}
+              style={{
+                border: '1px solid var(--border)',
+                background: 'var(--panel)',
+                color: 'var(--text)',
+                padding: '0.6rem 0.9rem',
+                borderRadius: '999px',
+                cursor: 'pointer',
+              }}
             >
               <LogOut size={18} />
-              <span style={{ marginLeft: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Salir</span>
+              <span style={{ marginLeft: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>
+                Salir
+              </span>
             </button>
           </div>
         </header>

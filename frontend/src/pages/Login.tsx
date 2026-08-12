@@ -7,7 +7,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,9 +40,7 @@ const [showPassword, setShowPassword] = useState(false);
       }}
     >
       <div className="card" style={{ width: 400, padding: '2rem' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          Producción Inteligente
-        </h2>
+        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Producción Inteligente</h2>
 
         {error && (
           <div

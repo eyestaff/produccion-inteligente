@@ -95,11 +95,7 @@ export async function requestPasswordReset(email: string) {
   return data;
 }
 
-export async function resetPassword(
-  token: string,
-  newPassword: string,
-  confirmPassword: string,
-) {
+export async function resetPassword(token: string, newPassword: string, confirmPassword: string) {
   const response = await fetch(`${API_BASE}/auth/reset-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
