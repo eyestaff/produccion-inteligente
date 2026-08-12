@@ -556,6 +556,18 @@ export function InventoryPage() {
 export function ConfigurationPage() {
   const toast = useToast();
   const [seeding, setSeeding] = useState(false);
+  const [showPdfModal, setShowPdfModal] = useState(false);
+
+  const handlePrint = () => {
+    const iframe = document.getElementById('pdf-modal-iframe') as HTMLIFrameElement;
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    } else {
+      const win = window.open('/Manual_Usuario_v1.0.pdf', '_blank');
+      win?.print();
+    }
+  };
 
   const handleSeed = async () => {
     if (
@@ -609,24 +621,27 @@ export function ConfigurationPage() {
           Documentación exportable en pdf
         </h3>
         <p style={{ margin: '0 0 1rem', color: 'var(--muted)', fontSize: '0.9rem' }}>
-          Descarga el manual completo de usuario y sistema, incluyendo el alcance, definiciones y
-          guías de uso para la versión 1.0.
+          Visualiza el manual completo de usuario y sistema en pantalla emergente. Podrás revisarlo,
+          imprimirlo o descargarlo directamente.
         </p>
-        <a
-          href="/Manual_Usuario_v1.0.pdf"
-          download="Manual_Usuario_v1.0.pdf"
+        <button
+          type="button"
+          onClick={() => setShowPdfModal(true)}
           style={{
-            display: 'inline-block',
-            textDecoration: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
             padding: '0.75rem 1.5rem',
             background: 'var(--accent)',
             color: 'white',
+            border: 'none',
             borderRadius: '8px',
             fontWeight: 600,
+            cursor: 'pointer',
           }}
         >
-          📄 Descargar Manual PDF
-        </a>
+          📄 Ver Manual PDF
+        </button>
       </div>
 
       <div
@@ -659,6 +674,125 @@ export function ConfigurationPage() {
           {seeding ? 'Generando...' : '⚠️ Generar Datos Demo'}
         </button>
       </div>
+
+      {showPdfModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.75)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.5rem',
+          }}
+          onClick={() => setShowPdfModal(false)}
+        >
+          <div
+            style={{
+              background: 'white',
+              borderRadius: '16px',
+              width: '100%',
+              maxWidth: '1000px',
+              height: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              overflow: 'hidden',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div
+              style={{
+                padding: '1rem 1.5rem',
+                borderBottom: '1px solid var(--border)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: '#f8fafc',
+              }}
+            >
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--text)' }}>
+                  Vista Previa - Manual de Usuario v1.0
+                </h3>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--muted)' }}>
+                  Revisa el documento antes de guardar o imprimir
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={handlePrint}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    padding: '0.5rem 1rem',
+                    background: '#e2e8f0',
+                    color: '#1e293b',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontWeight: 600,
+                    fontSize: '0.875rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  🖨️ Imprimir
+                </button>
+                <a
+                  href="/Manual_Usuario_v1.0.pdf"
+                  download="Manual_Usuario_v1.0.pdf"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    padding: '0.5rem 1rem',
+                    background: 'var(--accent)',
+                    color: 'white',
+                    textDecoration: 'none',
+                    borderRadius: '6px',
+                    fontWeight: 600,
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  ⬇️ Descargar PDF
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setShowPdfModal(false)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    fontSize: '1.25rem',
+                    cursor: 'pointer',
+                    color: 'var(--muted)',
+                    padding: '0.25rem 0.5rem',
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body / PDF Viewer */}
+            <div style={{ flex: 1, background: '#525659' }}>
+              <iframe
+                id="pdf-modal-iframe"
+                src="/Manual_Usuario_v1.0.pdf"
+                title="Manual de Usuario PDF"
+                style={{ width: '100%', height: '100%', border: 'none' }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
