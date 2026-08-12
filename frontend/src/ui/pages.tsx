@@ -697,8 +697,8 @@ export function ConfigurationPage() {
             style={{
               background: 'white',
               borderRadius: '16px',
-              width: '100%',
-              maxWidth: '1000px',
+              width: '92vw',
+              maxWidth: '1200px',
               height: '90vh',
               display: 'flex',
               flexDirection: 'column',
@@ -785,7 +785,7 @@ export function ConfigurationPage() {
             <div style={{ flex: 1, background: '#525659' }}>
               <iframe
                 id="pdf-modal-iframe"
-                src="/Manual_Usuario_v1.0.pdf"
+                src="/Manual_Usuario_v1.0.pdf#view=FitH&pagemode=none"
                 title="Manual de Usuario PDF"
                 style={{ width: '100%', height: '100%', border: 'none' }}
               />
