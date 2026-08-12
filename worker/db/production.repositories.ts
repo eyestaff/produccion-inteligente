@@ -1,6 +1,6 @@
 import type { Database } from './repositories';
 import type { RequestContext } from '../models/context';
-import { runStatement } from './repositories';
+import { runStatement, buildStatement, runBatch } from './repositories';
 
 export async function createProductionOrder(
   db: Database,
@@ -58,7 +58,7 @@ export async function getProductionOrder(db: Database, ctx: RequestContext, orde
   return { ...(order as any), items };
 }
 
-export async function updateProductionOrderStatus(
+export function buildUpdateProductionOrderStatusStatement(
   db: Database,
   ctx: RequestContext,
   orderId: number,
@@ -69,24 +69,35 @@ export async function updateProductionOrderStatus(
     status === 'in_progress' ? 'started_at' : status === 'completed' ? 'completed_at' : null;
 
   if (timeField && actualQuantity !== undefined) {
-    await runStatement(
+    return buildStatement(
       db,
       `UPDATE production_orders SET status = ?, actual_quantity = ?, ${timeField} = CURRENT_TIMESTAMP WHERE id = ? AND company_id = ?`,
       [status, actualQuantity, orderId, ctx.companyId],
     );
   } else if (timeField) {
-    await runStatement(
+    return buildStatement(
       db,
       `UPDATE production_orders SET status = ?, ${timeField} = CURRENT_TIMESTAMP WHERE id = ? AND company_id = ?`,
       [status, orderId, ctx.companyId],
     );
   } else {
-    await runStatement(
+    return buildStatement(
       db,
       'UPDATE production_orders SET status = ? WHERE id = ? AND company_id = ?',
       [status, orderId, ctx.companyId],
     );
   }
+}
+
+export async function updateProductionOrderStatus(
+  db: Database,
+  ctx: RequestContext,
+  orderId: number,
+  status: 'planned' | 'in_progress' | 'completed' | 'cancelled',
+  actualQuantity?: number,
+) {
+  const stmt = buildUpdateProductionOrderStatusStatement(db, ctx, orderId, status, actualQuantity);
+  await runBatch(db, [stmt]);
 }
 
 export async function listProductionOrders(db: Database, ctx: RequestContext) {

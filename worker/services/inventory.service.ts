@@ -6,6 +6,7 @@ import {
   recordInventoryTransaction,
   getInventorySnapshot,
   executeAtomicBackflush,
+  buildInventoryTransactionStatements,
 } from '../db/repositories';
 
 export class InventoryService {
@@ -53,6 +54,70 @@ export class InventoryService {
     // Generates Domain Event mockup here later
     await executeAtomicBackflush(this.db, this.ctx, orderId, storeId, ingredientsOut, productsIn);
     return true;
+  }
+
+  buildProductionBackflushStatements(
+    orderId: number,
+    storeId: number,
+    ingredientsOut: { productId: number; quantity: number }[],
+    productsIn: { productId: number; quantity: number }[],
+  ) {
+    const statements = [];
+
+    for (const ing of ingredientsOut) {
+      statements.push(
+        ...buildInventoryTransactionStatements(this.db, this.ctx, {
+          storeId,
+          productId: ing.productId,
+          type: 'out',
+          quantityChange: -ing.quantity,
+          reason: 'production',
+          sourceModule: 'ProductionEngine',
+          referenceType: 'ProductionOrder',
+          referenceId: orderId,
+          consumeReserve: true,
+        }),
+      );
+    }
+
+    for (const prod of productsIn) {
+      statements.push(
+        ...buildInventoryTransactionStatements(this.db, this.ctx, {
+          storeId,
+          productId: prod.productId,
+          type: 'in',
+          quantityChange: prod.quantity,
+          reason: 'production',
+          sourceModule: 'ProductionEngine',
+          referenceType: 'ProductionOrder',
+          referenceId: orderId,
+        }),
+      );
+    }
+
+    return statements;
+  }
+
+  buildTransactionStatements(input: {
+    storeId: number;
+    productId: number;
+    type: 'in' | 'out' | 'adjustment';
+    quantityChange: number;
+    reason: string;
+    sourceModule?: string;
+    referenceType?: string;
+    referenceId?: number;
+  }) {
+    return buildInventoryTransactionStatements(this.db, this.ctx, {
+      storeId: input.storeId,
+      productId: input.productId,
+      type: input.type,
+      quantityChange: input.quantityChange,
+      reason: input.reason,
+      sourceModule: input.sourceModule || 'ManualAdjustment',
+      referenceType: input.referenceType,
+      referenceId: input.referenceId,
+    });
   }
 
   async reserveForProduction(

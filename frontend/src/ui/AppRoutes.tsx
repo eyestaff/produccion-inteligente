@@ -4,6 +4,8 @@ import { DashboardPage, ConfigurationPage } from './pages';
 import { RecipesPage } from '../pages/RecipesPage';
 import { LoginPage } from '../pages/Login';
 import { ChangePasswordPage } from '../pages/ChangePasswordPage';
+import { ForgotPasswordPage } from '../pages/ForgotPasswordPage';
+import { ResetPasswordPage } from '../pages/ResetPasswordPage';
 import { ToastProvider } from './ToastProvider';
 import { ProductionDashboard } from '../pages/ProductionDashboard';
 import { InventoryDashboard } from '../pages/InventoryDashboard';
@@ -12,6 +14,8 @@ import { PurchasingPage } from '../pages/PurchasingPage';
 import { ForecastDashboard } from '../pages/ForecastDashboard';
 import { WasteDashboard } from '../pages/WasteDashboard';
 import { ProductsPage } from '../pages/ProductsPage';
+import { ReportsPage } from '../pages/ReportsPage';
+import { ExecutiveReportPage } from '../pages/ExecutiveReportPage';
 import { getAuthToken, getMustChangePassword } from '../services/api';
 
 
@@ -34,6 +38,8 @@ export function AppRoutes() {
     <ToastProvider>
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       {/* Change password — accessible only with a valid token, no AppShell */}
       <Route
         path="/change-password"
@@ -54,6 +60,8 @@ export function AppRoutes() {
         <Route path="/waste" element={<WasteDashboard />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/recipes" element={<RecipesPage />} />
+        <Route path="/reports/executive" element={<ExecutiveReportPage />} />
+        <Route path="/reports" element={<ReportsPage />} />
         <Route path="/configuration" element={<ConfigurationPage />} />
       </Route>
     </Routes>

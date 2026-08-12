@@ -79,6 +79,46 @@ export async function changePassword(
   });
 }
 
+export async function requestPasswordReset(email: string) {
+  const response = await fetch(`${API_BASE}/auth/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+
+  const data = (await response.json()) as any;
+
+  if (!response.ok) {
+    throw new Error(data.error || 'No se pudo solicitar la recuperación');
+  }
+
+  return data;
+}
+
+export async function resetPassword(
+  token: string,
+  newPassword: string,
+  confirmPassword: string,
+) {
+  const response = await fetch(`${API_BASE}/auth/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      token,
+      newPassword,
+      confirmPassword,
+    }),
+  });
+
+  const data = (await response.json()) as any;
+
+  if (!response.ok) {
+    throw new Error(data.error || 'No se pudo restablecer la contraseña');
+  }
+
+  return data;
+}
+
 export async function fetchApi(path: string, options?: RequestInit) {
   const token = getAuthToken();
   if (!token && !path.startsWith('/auth')) {

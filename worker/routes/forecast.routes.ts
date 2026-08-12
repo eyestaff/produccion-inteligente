@@ -2,6 +2,7 @@ import type { Env } from '../index';
 import type { RequestContext } from '../models/context';
 import { getForecastContext, saveForecast, getForecastHistory } from '../db/forecast.provider';
 import { generateForecast } from '../engine/forecast.engine';
+import { enhanceForecastWithAI } from '../engine/ai.engine';
 import { ProductionService } from '../services/production.service';
 
 export async function handleForecastRoute(
@@ -27,8 +28,13 @@ export async function handleForecastRoute(
       // Layer 1: Provider
       const context = await getForecastContext(db, ctx, storeId);
 
-      // Layer 2: Engine
-      const dashboardResult = generateForecast(context);
+      // Layer 2: Engine (Determinista)
+      let dashboardResult = generateForecast(context);
+
+      // Layer 2.5: AI Enhancement (Si el binding está disponible)
+      if (env.AI) {
+        dashboardResult = await enhanceForecastWithAI(dashboardResult, env.AI);
+      }
 
       // Layer 3: Presentation (Response)
       return new Response(JSON.stringify(dashboardResult), {

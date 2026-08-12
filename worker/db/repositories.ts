@@ -43,7 +43,11 @@ export async function runStatement(
       return boundStatement.first ? await boundStatement.first() : undefined;
     }
     if (mode === 'all') {
-      return boundStatement.all ? await boundStatement.all() : [];
+      if (!boundStatement.all) return [];
+      const result = await boundStatement.all();
+      return Array.isArray(result)
+        ? result
+        : ((result as any)?.results ?? []);
     }
     return boundStatement.run ? await boundStatement.run() : undefined;
   }
@@ -334,7 +338,6 @@ export async function listProducts(db: Database, ctx: RequestContext) {
       c.name AS categoryName,
       p.code, 
       p.name, 
-      p.type,
       p.base_unit AS baseUnit,
       p.cost,
       p.price,

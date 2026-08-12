@@ -15,13 +15,23 @@ export function AppShell({ title }: AppShellProps) {
   const location = useLocation();
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const currentTitle = useMemo(() => getPageTitle(location.pathname), [location.pathname]);
 
   return (
     <div className={classNames('app-shell', theme === 'dark' && 'theme-dark', sidebarCollapsed && 'app-shell--collapsed')}>
-      <aside className={classNames('sidebar', sidebarCollapsed && 'sidebar--collapsed')}>
+      {mobileMenuOpen && (
+        <div 
+          className="modal-overlay" 
+          style={{ zIndex: 5 }} 
+          onClick={() => setMobileMenuOpen(false)} 
+        />
+      )}
+      <aside className={classNames('sidebar', sidebarCollapsed && 'sidebar--collapsed', mobileMenuOpen && 'sidebar--mobile-open')}>
         <div className="sidebar__brand">
-          <div className="brand-mark">PI</div>
+          <div className="brand-mark">
+            <img src="/logo-square.png" alt="PI" />
+          </div>
           {!sidebarCollapsed && (
             <div>
               <h1>Producción Inteligente</h1>
@@ -41,8 +51,9 @@ export function AppShell({ title }: AppShellProps) {
               to={route.path}
               className={({ isActive }) => classNames('nav-link', isActive && 'nav-link--active')}
               title={route.title}
+              onClick={() => setMobileMenuOpen(false)}
             >
-              <span>{sidebarCollapsed ? route.title.charAt(0) : route.title}</span>
+              <span>{sidebarCollapsed && !mobileMenuOpen ? route.title.charAt(0) : route.title}</span>
             </NavLink>
           ))}
         </nav>
@@ -50,11 +61,16 @@ export function AppShell({ title }: AppShellProps) {
 
       <div className="main-panel">
         <header className="header">
-          <div>
-            <p className="eyebrow">Vista actual</p>
-            <h2>{title ?? currentTitle}</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(true)}>
+              <Menu size={24} />
+            </button>
+            <div>
+              <p className="eyebrow">Vista actual</p>
+              <h2>{title ?? currentTitle}</h2>
+            </div>
           </div>
-          <div className="header__actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div className="header__actions desktop-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div className="search-bar" style={{ position: 'relative' }}>
               <Search size={18} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
               <input type="search" placeholder="Buscar..." style={{ padding: '0.5rem 1rem 0.5rem 2.5rem', borderRadius: '20px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }} />

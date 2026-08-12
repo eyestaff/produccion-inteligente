@@ -318,6 +318,21 @@ export function ConfigurationPage() {
         <EmptyState title="Configuración inicial" description="Este espacio recoge los parámetros del sistema sin afectar la arquitectura actual." />
       </div>
 
+      {/* NEW SECTION FOR DOCUMENTATION */}
+      <div style={{ background: 'white', borderRadius: '12px', padding: '1.5rem', border: '1px solid var(--border)' }}>
+        <h3 style={{ margin: '0 0 0.5rem', color: 'var(--text)' }}>Documentación exportable en pdf</h3>
+        <p style={{ margin: '0 0 1rem', color: 'var(--muted)', fontSize: '0.9rem' }}>
+          Descarga el manual completo de usuario y sistema, incluyendo el alcance, definiciones y guías de uso para la versión 1.0.
+        </p>
+        <a 
+          href="/Manual_Usuario_v1.0.pdf" 
+          download="Manual_Usuario_v1.0.pdf"
+          style={{ display: 'inline-block', textDecoration: 'none', padding: '0.75rem 1.5rem', background: 'var(--accent)', color: 'white', borderRadius: '8px', fontWeight: 600 }}
+        >
+          📄 Descargar Manual PDF
+        </a>
+      </div>
+
       <div style={{ background: 'white', borderRadius: '12px', padding: '1.5rem', border: '1px solid #fca5a5' }}>
         <h3 style={{ margin: '0 0 0.5rem', color: '#991b1b' }}>Datos de Demostración (Seeding)</h3>
         <p style={{ margin: '0 0 1rem', color: '#6b7280', fontSize: '0.9rem' }}>

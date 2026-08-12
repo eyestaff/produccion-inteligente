@@ -90,3 +90,24 @@ export async function loginUser(
 export async function logoutUser(db: Env['DB'], token: string): Promise<void> {
   await deleteSession(db, token);
 }
+
+export function generatePasswordResetToken(): string {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return Array.from(array)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+export async function hashPasswordResetToken(token: string): Promise<string> {
+  const data = new TextEncoder().encode(token);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+export function getPasswordResetUrl(appUrl: string, token: string): string {
+  return `${appUrl}/reset-password?token=${encodeURIComponent(token)}`;
+}

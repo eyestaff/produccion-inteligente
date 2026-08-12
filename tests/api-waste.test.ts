@@ -53,6 +53,8 @@ beforeAll(async () => {
     DB: db,
     ASSETS: {} as any,
     PROJECT_NAME: 'Test',
+  APP_URL: 'https://test.example.com',
+  BREVO_API_KEY: 'test-brevo-key',
   };
 
   db.exec(`INSERT INTO companies (name, slug) VALUES ('Test Company', 'test-company')`);

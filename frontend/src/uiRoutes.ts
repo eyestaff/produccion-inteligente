@@ -17,6 +17,7 @@ export const APP_ROUTES: AppRoute[] = [
   { path: '/waste', title: 'Mermas', description: 'Gestión y análisis de mermas' },
   { path: '/products', title: 'Productos', description: 'Catálogo de productos y variantes' },
   { path: '/recipes', title: 'Recetas', description: 'Recetas y composición de productos' },
+  { path: '/reports', title: 'Reportes', description: 'Reportes ejecutivos y operativos' },
   { path: '/configuration', title: 'Configuración', description: 'Opciones de la plataforma' },
 ];
 

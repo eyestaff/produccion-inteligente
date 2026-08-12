@@ -20,9 +20,19 @@ export async function handlePwaRoute(pathname: string): Promise<Response | null>
   if (
     pathname === '/' ||
     pathname === '/login' ||
+    pathname === '/forgot-password' ||
+    pathname === '/reset-password' ||
+    pathname === '/change-password' ||
     pathname === '/dashboard' ||
+    pathname === '/forecast' ||
     pathname === '/production' ||
     pathname === '/inventory' ||
+    pathname === '/purchasing' ||
+    pathname === '/waste' ||
+    pathname === '/products' ||
+    pathname === '/recipes' ||
+    pathname === '/reports' ||
+    pathname === '/reports/executive' ||
     pathname === '/configuration'
   ) {
     return new Response(renderAppToHtml(pathname), {

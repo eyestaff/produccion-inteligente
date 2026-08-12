@@ -11,7 +11,9 @@ import {
   updateProductionOrder,
   saveProductionOrderBOM,
   getProductionOrderBOM,
+  buildUpdateProductionOrderStatusStatement,
 } from '../db/production.repositories';
+import { runBatch } from '../db/repositories';
 
 export class ProductionService {
   private recipesService: RecipesService;
@@ -236,27 +238,39 @@ export class ProductionService {
         order.targetQuantity > 0 ? item.quantity * (finalQuantity / order.targetQuantity) : 0,
     }));
 
-    // Orquestación: Inventario (Atomic Backflush)
-    await this.inventoryService.executeProductionBackflush(
-      orderId,
-      order.storeId,
-      ingredientsOut,
-      productsIn,
+    // Orquestación: Inventario y Estado (Atomic Backflush Puro - TECH-001)
+    const statements: any[] = [];
+
+    // 1. Insumos OUT & Productos IN
+    statements.push(
+      ...this.inventoryService.buildProductionBackflushStatements(
+        orderId,
+        order.storeId,
+        ingredientsOut,
+        productsIn,
+      )
     );
 
-    // Registrar mermas de producto final si hubo
+    // 2. Registrar mermas de producto final si hubo
     if (finalWaste > 0 && productsIn.length > 0) {
-      await this.inventoryService.createTransaction({
-        storeId: order.storeId,
-        productId: productsIn[0].productId,
-        type: 'out',
-        quantityChange: -finalWaste,
-        reason: 'breakage',
-      });
+      statements.push(
+        ...this.inventoryService.buildTransactionStatements({
+          storeId: order.storeId,
+          productId: productsIn[0].productId,
+          type: 'out',
+          quantityChange: -finalWaste,
+          reason: 'breakage',
+        })
+      );
     }
 
-    // Finalización
-    await updateProductionOrderStatus(this.db, this.ctx, orderId, 'completed', finalQuantity);
+    // 3. Finalización (Actualizar estado de la orden)
+    statements.push(
+      buildUpdateProductionOrderStatusStatement(this.db, this.ctx, orderId, 'completed', finalQuantity)
+    );
+
+    // EJECUCIÓN ATÓMICA GARANTIZADA
+    await runBatch(this.db, statements);
 
     console.log(
       `[EVENT] ProductionOrderCompleted: ${orderId} | Actual: ${finalQuantity} | Waste: ${finalWaste}`,

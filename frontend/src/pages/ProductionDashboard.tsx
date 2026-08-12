@@ -110,7 +110,40 @@ export function ProductionDashboard() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+    <div className="content animate-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <div className="flex-between">
+        <div>
+          <p className="eyebrow">Gestión Operativa</p>
+          <h2 style={{ margin: 0, fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.03em' }}>
+            Órdenes de Producción
+          </h2>
+        </div>
+        <div className="flex-end gap-2">
+          {orders.length > 0 && (
+            <button
+              onClick={() => {
+                const rows = orders.map(o => [
+                  `ORD-${o.id.toString().padStart(4, '0')}`,
+                  getProductLabel(o),
+                  o.storeName || 'Tienda #' + o.storeId,
+                  STATUS_LABELS[o.status]?.label || o.status
+                ]);
+                exportToCsv('ordenes-produccion', ['Orden', 'Producto(s)', 'Tienda', 'Estado'], rows);
+              }}
+              className="btn-secondary"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Exportar CSV
+            </button>
+          )}
+          <button onClick={() => navigate('/inventory')} className="btn-secondary">
+            Ver Inventario
+          </button>
+          <button onClick={() => setShowModal(true)} className="btn-primary">
+            + Nueva Orden
+          </button>
+        </div>
+      </div>
 
       {/* KPIs */}
       <div className="kpi-grid">
@@ -128,38 +161,9 @@ export function ProductionDashboard() {
         </article>
       </div>
 
-      {/* Header Actions */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3 style={{ margin: 0 }}>Órdenes de Producción</h3>
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          {orders.length > 0 && (
-            <button
-              onClick={() => {
-                const rows = orders.map(o => [
-                  `ORD-${o.id.toString().padStart(4, '0')}`,
-                  getProductLabel(o),
-                  o.storeName || 'Tienda #' + o.storeId,
-                  STATUS_LABELS[o.status]?.label || o.status
-                ]);
-                exportToCsv('ordenes-produccion', ['Orden', 'Producto(s)', 'Tienda', 'Estado'], rows);
-              }}
-              style={{ padding: '0.5rem 1rem', background: 'transparent', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}
-            >
-              Exportar CSV
-            </button>
-          )}
-          <button onClick={() => navigate('/inventory')} style={{ padding: '0.5rem 1rem', background: 'transparent', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>
-            Ver Inventario
-          </button>
-          <button onClick={() => setShowModal(true)} style={{ padding: '0.5rem 1rem', background: 'var(--text)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>
-            + Nueva Orden
-          </button>
-        </div>
-      </div>
-
       {/* Suggested Production (Forecast) */}
       {suggestions.length > 0 && (
-        <div style={{ background: 'var(--panel-muted)', border: '1px solid var(--border)', borderRadius: '8px', padding: '1.5rem' }}>
+        <div className="card animate-in animate-delay-1" style={{ borderLeft: '4px solid #8b5cf6' }}>
           <h4 style={{ margin: '0 0 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#8b5cf6' }}>
             <Zap size={18} /> Sugerencias de Hoy (Inteligencia Artificial)
           </h4>
@@ -170,7 +174,8 @@ export function ProductionDashboard() {
                 <div style={{ fontSize: '0.875rem', color: 'var(--muted)', marginBottom: '0.75rem' }}>Producir: <strong style={{ color: 'var(--text)' }}>{s.suggestedQuantity}</strong> uds</div>
                 <button 
                   onClick={() => setShowModal(true)} 
-                  style={{ width: '100%', padding: '0.5rem', background: '#8b5cf6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}
+                  className="btn-primary"
+                  style={{ width: '100%', background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)' }}
                 >
                   Planificar
                 </button>
@@ -181,24 +186,25 @@ export function ProductionDashboard() {
       )}
 
       {/* Orders Table */}
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+      <div className="card animate-in animate-delay-2" style={{ padding: 0, overflow: 'hidden' }}>
         {loading ? (
-          <div><SkeletonRow /><SkeletonRow /><SkeletonRow /></div>
+          <div style={{ padding: '2rem' }}><SkeletonRow /><SkeletonRow /><SkeletonRow /></div>
         ) : orders.length === 0 ? (
-          <EmptyState
-            title="Sin órdenes pendientes"
-            description="No hay producción planificada para hoy."
-            action={<button onClick={() => setShowModal(true)} style={{ padding: '0.5rem 1rem', background: 'var(--text)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Planificar ahora</button>}
-          />
+          <div style={{ border: 'none' }} className="empty-state">
+            <h3>Sin órdenes pendientes</h3>
+            <p>No hay producción planificada para hoy.</p>
+            <button onClick={() => setShowModal(true)} className="btn-primary mt-4">Planificar ahora</button>
+          </div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <div className="table-responsive">
+          <table>
             <thead>
-              <tr style={{ background: 'var(--panel-muted)', borderBottom: '1px solid var(--border)' }}>
-                <th style={{ padding: '0.75rem 1rem', fontWeight: 500 }}>Orden</th>
-                <th style={{ padding: '0.75rem 1rem', fontWeight: 500 }}>Producto(s)</th>
-                <th style={{ padding: '0.75rem 1rem', fontWeight: 500 }}>Tienda</th>
-                <th style={{ padding: '0.75rem 1rem', fontWeight: 500 }}>Estado</th>
-                <th style={{ padding: '0.75rem 1rem', fontWeight: 500 }}>Acciones</th>
+              <tr>
+                <th>Orden</th>
+                <th>Producto(s)</th>
+                <th>Tienda</th>
+                <th className="text-center">Estado</th>
+                <th className="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -206,40 +212,40 @@ export function ProductionDashboard() {
                 const st = STATUS_LABELS[o.status] || STATUS_LABELS.planned;
                 const isLoading = actionLoading === o.id;
                 return (
-                  <tr key={o.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--muted)', fontFamily: 'monospace' }}>ORD-{o.id.toString().padStart(4, '0')}</td>
-                    <td style={{ padding: '0.75rem 1rem', maxWidth: '280px', fontWeight: 500 }}>{getProductLabel(o)}</td>
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--muted)' }}>{o.storeName || 'Tienda #' + o.storeId}</td>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <span style={{ padding: '3px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 600, background: st.bg, color: st.color }}>{st.label}</span>
+                  <tr key={o.id}>
+                    <td style={{ color: 'var(--muted)', fontFamily: 'monospace', fontWeight: 600 }}>ORD-{o.id.toString().padStart(4, '0')}</td>
+                    <td style={{ maxWidth: '280px', fontWeight: 600 }}>{getProductLabel(o)}</td>
+                    <td style={{ color: 'var(--muted)' }}>{o.storeName || 'Tienda #' + o.storeId}</td>
+                    <td className="text-center">
+                      <span className="badge" style={{ background: st.bg, color: st.color, border: `1px solid ${st.color}33` }}>{st.label}</span>
                     </td>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <td className="text-center">
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'center' }}>
                         {o.status === 'planned' && (
-                          <button disabled={isLoading} onClick={() => handleAction(o.id, o.storeId, 'start')} style={{ cursor: 'pointer', padding: '4px 10px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '4px', fontWeight: 500, fontSize: '0.875rem' }}>
+                          <button disabled={isLoading} onClick={() => handleAction(o.id, o.storeId, 'start')} className="btn-primary" style={{ padding: '0.25rem 0.75rem' }}>
                             {isLoading ? '…' : 'Iniciar'}
                           </button>
                         )}
                         {o.status === 'in_progress' && (
                           <>
-                            <button disabled={isLoading} onClick={() => setOrderForSheet(o)} style={{ cursor: 'pointer', padding: '4px 10px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '4px', fontWeight: 500, fontSize: '0.875rem' }}>
+                            <button disabled={isLoading} onClick={() => setOrderForSheet(o)} className="btn-secondary" style={{ padding: '0.25rem 0.75rem' }}>
                               Ver Receta
                             </button>
-                            <button disabled={isLoading} onClick={() => setOrderToComplete(o)} style={{ cursor: 'pointer', padding: '4px 10px', background: '#10b981', color: 'white', border: 'none', borderRadius: '4px', fontWeight: 500, fontSize: '0.875rem' }}>
+                            <button disabled={isLoading} onClick={() => setOrderToComplete(o)} className="btn-primary" style={{ padding: '0.25rem 0.75rem', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
                               {isLoading ? '…' : '✓ Completar'}
                             </button>
                           </>
                         )}
                         {o.status === 'completed' && (
-                          <button onClick={() => navigate('/inventory')} style={{ cursor: 'pointer', padding: '4px 10px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.875rem' }}>
+                          <button onClick={() => navigate('/inventory')} className="btn-secondary" style={{ padding: '0.25rem 0.75rem' }}>
                             Ver stock →
                           </button>
                         )}
-                        <button onClick={() => window.print()} title="Imprimir orden" style={{ cursor: 'pointer', padding: '4px', background: 'transparent', border: 'none', color: 'var(--muted)' }}>
+                        <button onClick={() => window.print()} title="Imprimir orden" style={{ cursor: 'pointer', padding: '0.25rem', background: 'transparent', border: 'none', color: 'var(--muted)', transition: 'color 0.2s' }} onMouseOver={e => e.currentTarget.style.color = 'var(--text)'} onMouseOut={e => e.currentTarget.style.color = 'var(--muted)'}>
                           <Printer size={18} />
                         </button>
                         {(o.status === 'planned' || o.status === 'in_progress') && (
-                          <button disabled={isLoading} onClick={() => handleAction(o.id, o.storeId, 'cancel')} style={{ cursor: 'pointer', padding: '4px 8px', color: '#ef4444', border: 'none', background: 'transparent', fontSize: '0.875rem' }}>
+                          <button disabled={isLoading} onClick={() => handleAction(o.id, o.storeId, 'cancel')} style={{ cursor: 'pointer', padding: '0.25rem 0.5rem', color: '#ef4444', border: 'none', background: 'transparent', fontSize: '0.85rem', fontWeight: 600, transition: 'opacity 0.2s' }} onMouseOver={e => e.currentTarget.style.opacity = '0.7'} onMouseOut={e => e.currentTarget.style.opacity = '1'}>
                             Cancelar
                           </button>
                         )}
@@ -250,6 +256,7 @@ export function ProductionDashboard() {
               })}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

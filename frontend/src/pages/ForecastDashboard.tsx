@@ -41,6 +41,11 @@ function RecommendationCard({
         <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => setExpanded(!expanded)}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--text)' }}>{rec.productName}</span>
+            {isAiAdjusted && (
+              <span style={{ padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600, background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)', color: '#3730a3', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                <span>🤖</span> IA
+              </span>
+            )}
             <span style={{ padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600, background: conf.bg, color: conf.text }}>
               Confianza {conf.label}
             </span>
@@ -83,7 +88,12 @@ function RecommendationCard({
           </h4>
           <ul style={{ margin: 0, paddingLeft: '1.25rem', color: '#475569', fontSize: '0.9rem', lineHeight: 1.6 }}>
             {rec.reasons.map((r, i) => (
-              <li key={i}>{r}</li>
+              <li key={i} style={{ 
+                fontWeight: r.startsWith('🤖') ? 600 : 400,
+                color: r.startsWith('🤖') ? '#3730a3' : 'inherit'
+              }}>
+                {r}
+              </li>
             ))}
           </ul>
         </div>
@@ -219,19 +229,23 @@ export function ForecastDashboard() {
   const buyRecs = data.recommendations.filter(r => r.type === 'buy');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+    <div className="content animate-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="flex-between">
         <div>
-          <h2 style={{ margin: 0, fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            Forecast & S&OP <span style={{ fontSize: '0.9rem', padding: '3px 8px', background: '#e0e7ff', color: '#3730a3', borderRadius: '12px', fontWeight: 600 }}>Smart Protocol v1</span>
+          <p className="eyebrow">Inteligencia Artificial</p>
+          <h2 style={{ margin: 0, fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.03em', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            Forecast & S&OP 
+            <span style={{ fontSize: '0.9rem', padding: '3px 8px', background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)', color: '#3730a3', borderRadius: '12px', fontWeight: 600 }}>
+              Smart Protocol v1
+            </span>
           </h2>
           <p style={{ margin: '0.25rem 0 0', color: 'var(--muted)', fontSize: '0.9rem' }}>
             Predicciones basadas en ventas y consumo real de los últimos 30 días.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <div className="flex-end gap-2">
           {stores.length > 0 && (
             <select
               value={selectedStoreId || ''}
@@ -244,13 +258,9 @@ export function ForecastDashboard() {
           <button 
             onClick={handleApprove}
             disabled={isApproving || data.recommendations.length === 0}
+            className="btn-primary"
             style={{
-              padding: '0.75rem 1.5rem',
-              borderRadius: '8px',
-              border: 'none',
-              background: '#10b981',
-              color: 'white',
-              fontWeight: 700,
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
               cursor: isApproving ? 'not-allowed' : 'pointer',
               opacity: isApproving ? 0.7 : 1
             }}
@@ -262,7 +272,7 @@ export function ForecastDashboard() {
 
       {/* Riesgos Alert */}
       {data.risks.length > 0 && (
-        <div style={{ background: 'white', borderRadius: '12px', border: '1px solid var(--border)', padding: '1.5rem' }}>
+        <div className="card animate-in animate-delay-1" style={{ borderLeft: '4px solid #ef4444' }}>
           <h3 style={{ margin: '0 0 1rem', fontSize: '1.1rem', color: '#111827' }}>Riesgos Detectados</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
             {data.risks.map((risk, i) => <RiskCard key={i} risk={risk} />)}
@@ -319,25 +329,27 @@ export function ForecastDashboard() {
 
       {/* Histórico y Desviaciones */}
       {history.length > 0 && (
-        <div style={{ marginTop: '2rem', borderTop: '1px solid var(--border)', paddingTop: '2rem' }}>
-          <h3 style={{ marginBottom: '1rem', color: 'var(--text)' }}>Histórico de Previsiones (Desviaciones)</h3>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+        <div className="card animate-in animate-delay-2" style={{ padding: 0, overflow: 'hidden', marginTop: '2rem' }}>
+          <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)' }}>
+            <h3 style={{ margin: 0, color: 'var(--text)', fontSize: '1.1rem' }}>Histórico de Previsiones (Desviaciones)</h3>
+          </div>
+          <div className="table-responsive">
+            <table>
               <thead>
-                <tr style={{ borderBottom: '2px solid var(--border)', textAlign: 'left', color: 'var(--muted)' }}>
-                  <th style={{ padding: '0.75rem' }}>Fecha Objetivo</th>
-                  <th style={{ padding: '0.75rem' }}>Producto</th>
-                  <th style={{ padding: '0.75rem' }}>Sugerido</th>
-                  <th style={{ padding: '0.75rem' }}>Aprobado</th>
+                <tr>
+                  <th>Fecha Objetivo</th>
+                  <th>Producto</th>
+                  <th className="text-right">Sugerido</th>
+                  <th className="text-right">Aprobado</th>
                 </tr>
               </thead>
               <tbody>
                 {history.map(h => (
-                  <tr key={h.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '0.75rem' }}>{h.targetDate}</td>
-                    <td style={{ padding: '0.75rem', fontWeight: 500 }}>{h.productName}</td>
-                    <td style={{ padding: '0.75rem', color: '#64748b' }}>{Number(h.suggestedQuantity).toFixed(2)}</td>
-                    <td style={{ padding: '0.75rem', fontWeight: 600 }}>{Number(h.adjustedQuantity).toFixed(2)}</td>
+                  <tr key={h.id}>
+                    <td>{h.targetDate}</td>
+                    <td style={{ fontWeight: 600 }}>{h.productName}</td>
+                    <td className="text-right" style={{ color: 'var(--muted)' }}>{Number(h.suggestedQuantity).toFixed(2)}</td>
+                    <td className="text-right" style={{ fontWeight: 600 }}>{Number(h.adjustedQuantity).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>

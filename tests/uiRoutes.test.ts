@@ -12,6 +12,7 @@ describe('ui routes', () => {
       '/waste',
       '/products',
       '/recipes',
+      '/reports',
       '/configuration',
     ]);
   });

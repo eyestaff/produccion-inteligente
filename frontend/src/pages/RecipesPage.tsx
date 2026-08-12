@@ -913,15 +913,16 @@ export function RecipesPage() {
   const draftCount = recipes.filter((r) => r.status === 'draft').length;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', paddingBottom: '3rem' }}>
+    <div className="content animate-in">
       {/* Page Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+      <div className="flex-between mb-8">
         <div>
-          <h1 style={{ margin: '0 0 0.25rem', fontSize: '1.75rem', color: 'var(--text)' }}>
-            Recetas / BOM
-          </h1>
-          <p style={{ margin: 0, color: 'var(--muted)' }}>
-            Escandallos y fórmulas de producción · {recipes.length} recetas · {activeCount} activas
+          <p className="eyebrow">Recetas / BOM</p>
+          <h2 style={{ margin: 0, fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.03em' }}>
+            Escandallos y Fórmulas
+          </h2>
+          <p style={{ margin: '0.25rem 0 0', color: 'var(--muted)' }}>
+            {recipes.length} recetas totales · {activeCount} activas
           </p>
         </div>
         <button
@@ -929,7 +930,8 @@ export function RecipesPage() {
           className="btn-primary"
           onClick={() => setShowCreate(true)}
         >
-          + Nueva Receta
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Nueva Receta
         </button>
       </div>
 
@@ -960,76 +962,69 @@ export function RecipesPage() {
       </div>
 
       {/* Filters */}
-      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+      <div className="flex-between mb-4 mt-8 animate-in animate-delay-1">
         <input
           type="search"
           placeholder="Buscar por producto o nombre…"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           style={{
-            padding: '0.5rem 0.875rem',
+            padding: '0.75rem 1rem',
             border: '1px solid var(--border)',
-            borderRadius: '6px',
-            minWidth: '240px',
+            borderRadius: 'var(--radius-full)',
+            minWidth: '320px',
             background: 'var(--panel)',
             color: 'var(--text)',
+            outline: 'none',
           }}
         />
+        <div className="tabs">
         {(['all', 'active', 'draft', 'inactive'] as const).map((s) => (
           <button
             key={s}
             onClick={() => setFilterStatus(s)}
-            style={{
-              padding: '0.4rem 0.875rem',
-              border: '1px solid var(--border)',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              background: filterStatus === s ? 'var(--accent)' : 'var(--panel)',
-              color: filterStatus === s ? 'white' : 'var(--text)',
-              fontWeight: filterStatus === s ? 600 : 400,
-              fontSize: '0.875rem',
-            }}
+            className={`tab-btn ${filterStatus === s ? 'active' : ''}`}
           >
             {s === 'all' ? 'Todas' : STATUS_META[s]?.label ?? s}
           </button>
         ))}
+        </div>
       </div>
 
       {/* Recipes Table */}
-      <div className="card" style={{ borderLeft: '4px solid #7c3aed', padding: 0, overflow: 'hidden' }}>
+      <div className="card animate-in animate-delay-2" style={{ padding: 0, overflow: 'hidden' }}>
         {loading ? (
-          <div style={{ padding: '1rem' }}>
+          <div style={{ padding: '2rem' }}>
             <SkeletonRow />
             <SkeletonRow />
             <SkeletonRow />
           </div>
         ) : filtered.length === 0 ? (
-          <EmptyState
-            title={recipes.length === 0 ? 'Sin recetas todavía' : 'Sin resultados'}
-            description={
-              recipes.length === 0
+          <div style={{ border: 'none' }} className="empty-state">
+            <h3>{recipes.length === 0 ? 'Sin recetas todavía' : 'Sin resultados'}</h3>
+            <p>
+              {recipes.length === 0
                 ? 'Crea tu primera receta para comenzar a gestionar el BOM de producción.'
-                : 'Prueba con otros filtros o términos de búsqueda.'
-            }
-            action={
-              recipes.length === 0 ? (
-                <button className="btn-primary" onClick={() => setShowCreate(true)}>
-                  + Nueva Receta
-                </button>
-              ) : undefined
-            }
-          />
+                : 'Prueba con otros filtros o términos de búsqueda.'}
+            </p>
+            {recipes.length === 0 && (
+              <button className="btn-primary mt-4" onClick={() => setShowCreate(true)}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Nueva Receta
+              </button>
+            )}
+          </div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+          <div className="table-responsive">
+            <table>
               <thead>
-                <tr style={{ background: 'var(--panel-muted)', textAlign: 'left', color: 'var(--muted)' }}>
-                  <th style={{ padding: '0.875rem 1rem' }}>Producto Terminado</th>
-                  <th style={{ padding: '0.875rem 1rem' }}>Nombre Receta</th>
-                  <th style={{ padding: '0.875rem 1rem', textAlign: 'center' }}>Estado</th>
-                  <th style={{ padding: '0.875rem 1rem', textAlign: 'right' }}>Rendimiento</th>
-                  <th style={{ padding: '0.875rem 1rem', textAlign: 'right' }}>Versión</th>
-                  <th style={{ padding: '0.875rem 1rem', textAlign: 'center' }}>Acciones</th>
+                <tr>
+                  <th>Producto Terminado</th>
+                  <th>Nombre Receta</th>
+                  <th className="text-center">Estado</th>
+                  <th className="text-right">Rendimiento</th>
+                  <th className="text-right">Versión</th>
+                  <th className="text-center">Acciones</th>
                 </tr>
               </thead>
               <tbody>

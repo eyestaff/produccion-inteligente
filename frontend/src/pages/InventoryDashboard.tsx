@@ -71,23 +71,25 @@ export function InventoryDashboard() {
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div className="content animate-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       
       {/* Page Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="flex-between">
         <div>
-          <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Inventario</h2>
+          <p className="eyebrow">Gestión de Stock</p>
+          <h2 style={{ margin: 0, fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.03em' }}>Inventario</h2>
           <p style={{ margin: '0.25rem 0 0', color: 'var(--muted)', fontSize: '0.9rem' }}>
             Control en tiempo real de existencias y niveles
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+        <div className="flex-end gap-2">
           {inventory.length > 0 && (
             <button
               onClick={handleExportCsv}
-              style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'white', color: 'var(--text)', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+              className="btn-secondary"
             >
-              📊 Exportar CSV
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Exportar CSV
             </button>
           )}
           {stores.length > 0 && (
@@ -103,7 +105,7 @@ export function InventoryDashboard() {
       </div>
 
       {/* KPIs Grid */}
-      <div className="kpi-grid">
+      <div className="kpi-grid animate-in animate-delay-1">
         <article className="kpi-card">
           <span className="kpi-label">Total Referencias</span>
           <strong className="kpi-value">{kpis.totalItems}</strong>
@@ -119,26 +121,26 @@ export function InventoryDashboard() {
       </div>
 
       {/* Inventory List */}
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ padding: '1.25rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="card animate-in animate-delay-2" style={{ padding: 0, overflow: 'hidden' }}>
+        <div className="flex-between" style={{ padding: '1.25rem', borderBottom: '1px solid var(--border)' }}>
           <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Desglose por producto</h3>
           <input
             type="text"
             placeholder="Buscar por código o nombre..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border)', width: '100%', maxWidth: '300px' }}
+            style={{ padding: '0.75rem 1rem', borderRadius: 'var(--radius-full)', border: '1px solid var(--border)', width: '100%', maxWidth: '300px', outline: 'none', background: 'var(--panel)' }}
           />
         </div>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <div className="table-responsive">
+          <table>
             <thead>
-              <tr style={{ background: 'var(--panel-muted)', borderBottom: '1px solid var(--border)' }}>
-                <th style={{ padding: '1rem', fontWeight: 500 }}>Producto</th>
-                <th style={{ padding: '1rem', fontWeight: 500 }}>Físico Total</th>
-                <th style={{ padding: '1rem', fontWeight: 500 }}>Reservado</th>
-                <th style={{ padding: '1rem', fontWeight: 500 }}>Disponible</th>
-                <th style={{ padding: '1rem', fontWeight: 500 }}>Acciones</th>
+              <tr>
+                <th>Producto</th>
+                <th className="text-right">Físico Total</th>
+                <th className="text-right">Reservado</th>
+                <th className="text-right">Disponible</th>
+                <th className="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -156,15 +158,15 @@ export function InventoryDashboard() {
                 </tr>
               ) : (
                 filteredInventory.map(item => (
-                  <tr key={item.productId} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '1rem', fontWeight: 500 }}>{item.productName}</td>
-                    <td style={{ padding: '1rem' }}>{item.quantity}</td>
-                    <td style={{ padding: '1rem', color: '#f59e0b' }}>{item.reservedQuantity}</td>
-                    <td style={{ padding: '1rem', fontWeight: 600, color: item.availableQuantity <= 0 ? '#ef4444' : 'inherit' }}>{item.availableQuantity}</td>
-                    <td style={{ padding: '1rem' }}>
+                  <tr key={item.productId}>
+                    <td style={{ fontWeight: 600 }}>{item.productName}</td>
+                    <td className="text-right">{item.quantity}</td>
+                    <td className="text-right" style={{ color: '#f59e0b', fontWeight: 600 }}>{item.reservedQuantity}</td>
+                    <td className="text-right" style={{ fontWeight: 700, color: item.availableQuantity <= 0 ? '#ef4444' : 'inherit' }}>{item.availableQuantity}</td>
+                    <td className="text-center">
                       <button 
                         onClick={() => navigate(`/inventory/${selectedStoreId}/product/${item.productId}`, { state: { productName: item.productName } })}
-                        style={{ cursor: 'pointer', padding: '4px 8px', background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '4px' }}>
+                        className="btn-secondary" style={{ padding: '0.25rem 0.75rem' }}>
                         Ver Detalles
                       </button>
                     </td>

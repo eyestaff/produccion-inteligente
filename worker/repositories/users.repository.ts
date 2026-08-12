@@ -80,3 +80,43 @@ export async function updateUserPassword(
     .bind(newPasswordHash, newPasswordSalt, userId)
     .run();
 }
+
+export async function createPasswordResetToken(
+  db: Env['DB'],
+  userId: number,
+  tokenHash: string,
+  expiresAt: number,
+): Promise<void> {
+  await db
+    .prepare(
+      'INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)',
+    )
+    .bind(userId, tokenHash, expiresAt)
+    .run();
+}
+
+export async function findValidPasswordResetToken(
+  db: Env['DB'],
+  tokenHash: string,
+  now: number,
+): Promise<{ id: number; userId: number } | null> {
+  const token = await db
+    .prepare(
+      'SELECT id, user_id as userId FROM password_reset_tokens WHERE token_hash = ? AND used_at IS NULL AND expires_at > ?',
+    )
+    .bind(tokenHash, now)
+    .first();
+
+  return token ? (token as { id: number; userId: number }) : null;
+}
+
+export async function markPasswordResetTokenUsed(
+  db: Env['DB'],
+  tokenId: number,
+  usedAt: number,
+): Promise<void> {
+  await db
+    .prepare('UPDATE password_reset_tokens SET used_at = ? WHERE id = ?')
+    .bind(usedAt, tokenId)
+    .run();
+}

@@ -83,16 +83,19 @@ export function WasteDashboard() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div className="content animate-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="flex-between">
         <div>
-          <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Waste Management</h2>
+          <p className="eyebrow">Gestión Operativa</p>
+          <h2 style={{ margin: 0, fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.03em' }}>
+            Mermas y Desperdicios
+          </h2>
           <p style={{ margin: '0.25rem 0 0', color: 'var(--muted)', fontSize: '0.9rem' }}>
-            Control y análisis de mermas y desperdicios
+            Control y análisis de impacto económico
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+        <div className="flex-end gap-2">
           {stores.length > 0 && (
             <select 
               value={selectedStoreId || ''} 
@@ -105,7 +108,8 @@ export function WasteDashboard() {
           <button
             onClick={() => setIsModalOpen(true)}
             disabled={!selectedStoreId}
-            style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: 'none', background: 'var(--primary)', color: 'white', fontWeight: 500, cursor: 'pointer' }}
+            className="btn-primary"
+            style={{ background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' }}
           >
             + Registrar Merma
           </button>
@@ -117,55 +121,57 @@ export function WasteDashboard() {
       ) : (
         <>
           {/* KPIs */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-            <div style={{ background: 'var(--panel)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
-              <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Merma Hoy</div>
-              <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--danger)' }}>{metrics?.dailyWaste || 0}</div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginTop: '0.5rem' }}>unidades perdidas</div>
-            </div>
+          <div className="kpi-grid animate-in animate-delay-1">
+            <article className="kpi-card" style={{ borderLeft: '4px solid #ef4444' }}>
+              <span className="kpi-label">Merma Hoy</span>
+              <strong className="kpi-value" style={{ color: '#ef4444' }}>{metrics?.dailyWaste || 0}</strong>
+              <p className="kpi-detail">unidades perdidas</p>
+            </article>
             
-            <div style={{ background: 'var(--panel)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
-              <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Semana Actual</div>
-              <div style={{ fontSize: '2rem', fontWeight: 700 }}>{metrics?.weeklyWaste || 0}</div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginTop: '0.5rem' }}>unidades en 7 días</div>
-            </div>
+            <article className="kpi-card">
+              <span className="kpi-label">Semana Actual</span>
+              <strong className="kpi-value">{metrics?.weeklyWaste || 0}</strong>
+              <p className="kpi-detail">unidades en 7 días</p>
+            </article>
 
-            <div style={{ background: 'var(--panel)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
-              <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Top Producto (30d)</div>
-              <div style={{ fontSize: '1.2rem', fontWeight: 600, marginTop: '0.5rem' }}>{metrics?.topProduct || '-'}</div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--danger)', marginTop: '0.5rem', fontWeight: 500 }}>{metrics?.topProductWaste || 0} unidades mermadas</div>
-            </div>
+            <article className="kpi-card">
+              <span className="kpi-label">Top Producto (30d)</span>
+              <strong className="kpi-value" style={{ fontSize: '1.5rem' }}>{metrics?.topProduct || '-'}</strong>
+              <p className="kpi-detail" style={{ color: '#ef4444' }}>{metrics?.topProductWaste || 0} unidades mermadas</p>
+            </article>
 
-            <div style={{ background: 'var(--panel)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
-              <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Coste Estimado (7d)</div>
-              <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--warning)' }}>${(metrics?.estimatedCost || 0).toFixed(2)}</div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginTop: '0.5rem' }}>impacto teórico</div>
-            </div>
+            <article className="kpi-card" style={{ borderLeft: '4px solid #f59e0b' }}>
+              <span className="kpi-label">Coste Estimado (7d)</span>
+              <strong className="kpi-value" style={{ color: '#f59e0b' }}>${(metrics?.estimatedCost || 0).toFixed(2)}</strong>
+              <p className="kpi-detail">impacto teórico</p>
+            </article>
           </div>
 
           {/* History */}
-          <div style={{ background: 'var(--panel)', borderRadius: '12px', border: '1px solid var(--border)', overflow: 'hidden' }}>
-            <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="card animate-in animate-delay-2" style={{ padding: 0, overflow: 'hidden' }}>
+            <div className="flex-between" style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)' }}>
               <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Historial Reciente</h3>
               <button 
                 onClick={handleExportCsv}
                 disabled={history.length === 0}
-                style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', cursor: history.length > 0 ? 'pointer' : 'not-allowed', color: 'var(--text)' }}
+                className="btn-secondary"
+                style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
               >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                 Exportar CSV
               </button>
             </div>
             
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <div className="table-responsive">
+              <table>
                 <thead>
-                  <tr style={{ background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
-                    <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--muted)', fontSize: '0.85rem' }}>FECHA</th>
-                    <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--muted)', fontSize: '0.85rem' }}>PRODUCTO</th>
-                    <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--muted)', fontSize: '0.85rem' }}>CANTIDAD</th>
-                    <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--muted)', fontSize: '0.85rem' }}>MOTIVO</th>
-                    <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--muted)', fontSize: '0.85rem' }}>USUARIO</th>
-                    <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--muted)', fontSize: '0.85rem' }}>NOTAS</th>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th className="text-center">Motivo</th>
+                    <th>Usuario</th>
+                    <th>Notas</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -177,31 +183,25 @@ export function WasteDashboard() {
                     </tr>
                   ) : (
                     history.map(row => (
-                      <tr key={row.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                        <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem' }}>
+                      <tr key={row.id}>
+                        <td>
                           {new Date(row.createdAt).toLocaleString()}
                         </td>
-                        <td style={{ padding: '1rem 1.5rem', fontWeight: 500 }}>
+                        <td style={{ fontWeight: 600 }}>
                           {row.productName}
                         </td>
-                        <td style={{ padding: '1rem 1.5rem', color: 'var(--danger)', fontWeight: 600 }}>
+                        <td style={{ color: '#ef4444', fontWeight: 600 }}>
                           {row.quantity}
                         </td>
-                        <td style={{ padding: '1rem 1.5rem' }}>
-                          <span style={{ 
-                            background: 'var(--bg)', 
-                            padding: '0.25rem 0.5rem', 
-                            borderRadius: '4px', 
-                            fontSize: '0.8rem',
-                            color: 'var(--muted)'
-                          }}>
+                        <td className="text-center">
+                          <span className="badge" style={{ background: 'var(--panel-muted)', color: 'var(--text)', border: '1px solid var(--border)' }}>
                             {getReasonLabel(row.reason)}
                           </span>
                         </td>
-                        <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem', color: 'var(--muted)' }}>
+                        <td style={{ color: 'var(--muted)' }}>
                           {row.userEmail || `ID: ${row.createdBy}`}
                         </td>
-                        <td style={{ padding: '1rem 1.5rem', fontSize: '0.85rem', color: 'var(--muted)', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <td style={{ color: 'var(--muted)', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {row.notes || '-'}
                         </td>
                       </tr>
