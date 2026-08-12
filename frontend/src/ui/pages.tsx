@@ -785,7 +785,7 @@ export function ConfigurationPage() {
             <div style={{ flex: 1, background: '#525659' }}>
               <iframe
                 id="pdf-modal-iframe"
-                src="/Manual_Usuario_v1.0.pdf#view=FitH&pagemode=none"
+                src="/Manual_Usuario_v1.0.pdf#zoom=72&pagemode=none"
                 title="Manual de Usuario PDF"
                 style={{ width: '100%', height: '100%', border: 'none' }}
               />

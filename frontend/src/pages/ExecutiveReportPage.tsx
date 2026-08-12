@@ -106,7 +106,7 @@ export function ExecutiveReportPage() {
       >
         <iframe
           id="pdf-report-iframe"
-          src="/Manual_Usuario_v1.0.pdf#view=FitH&pagemode=none"
+          src="/Manual_Usuario_v1.0.pdf#zoom=72&pagemode=none"
           title="Resumen Ejecutivo PDF"
           style={{
             width: '100%',
@@ -215,7 +215,7 @@ export function ExecutiveReportPage() {
 
             <div style={{ flex: 1, background: '#525659' }}>
               <iframe
-                src="/Manual_Usuario_v1.0.pdf#view=FitH&pagemode=none"
+                src="/Manual_Usuario_v1.0.pdf#zoom=72&pagemode=none"
                 title="Visualizador PDF Completo"
                 style={{ width: '100%', height: '100%', border: 'none' }}
               />
