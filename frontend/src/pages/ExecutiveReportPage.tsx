@@ -1,152 +1,228 @@
-import { FileText, Download, Mail } from 'lucide-react';
+import { useState } from 'react';
+import { Printer, Download, Eye, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export function ExecutiveReportPage() {
+  const navigate = useNavigate();
+  const [showPdfModal, setShowPdfModal] = useState(false);
+
+  const handlePrint = () => {
+    const iframe = document.getElementById('pdf-report-iframe') as HTMLIFrameElement;
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    } else {
+      window.print();
+    }
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1.25rem',
+        maxWidth: '1200px',
+        margin: '0 auto',
+      }}
+    >
+      {/* Action Bar Header */}
+      <div
+        className="card flex-between"
+        style={{
+          padding: '1rem 1.5rem',
+          background: 'var(--panel-solid)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={() => navigate('/reports')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.5rem 0.85rem',
+            }}
+          >
+            <ArrowLeft size={16} /> Volver
+          </button>
+          <div>
+            <p className="eyebrow" style={{ margin: 0 }}>
+              Documento Oficial
+            </p>
+            <h2 style={{ margin: '0.1rem 0 0', fontSize: '1.25rem' }}>Resumen Ejecutivo</h2>
+          </div>
+        </div>
+
+        <div className="flex-end" style={{ gap: '0.75rem' }}>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={() => setShowPdfModal(true)}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+          >
+            <Eye size={16} /> Vista Previa PDF
+          </button>
+
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={handlePrint}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+          >
+            <Printer size={16} /> Imprimir
+          </button>
+
+          <a
+            href="/Manual_Usuario_v1.0.pdf"
+            download="Resumen_Ejecutivo_Produccion_Inteligente.pdf"
+            className="btn-primary"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              textDecoration: 'none',
+            }}
+          >
+            <Download size={16} /> Descargar PDF
+          </a>
+        </div>
+      </div>
+
+      {/* Embedded Document Viewer Container (Fits cleanly in viewport) */}
       <div
         className="card"
         style={{
-          padding: '1.5rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          gap: '1rem',
+          padding: 0,
+          overflow: 'hidden',
+          height: 'calc(100vh - 220px)',
+          minHeight: '600px',
+          background: '#525659',
+          borderRadius: '12px',
+          boxShadow: 'var(--shadow-lg)',
         }}
       >
-        <div>
-          <p
-            style={{
-              margin: 0,
-              color: 'var(--muted)',
-              fontSize: '0.8rem',
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-            }}
-          >
-            Reporte interno
-          </p>
-
-          <h1 style={{ margin: '0.4rem 0 0' }}>Resumen Ejecutivo</h1>
-
-          <p style={{ color: 'var(--muted)', marginBottom: 0 }}>Producción Inteligente</p>
-        </div>
-
-        <FileText size={28} />
+        <iframe
+          id="pdf-report-iframe"
+          src="/Manual_Usuario_v1.0.pdf#view=FitH&pagemode=none"
+          title="Resumen Ejecutivo PDF"
+          style={{
+            width: '100%',
+            height: '100%',
+            border: 'none',
+          }}
+        />
       </div>
 
-      <section className="card" style={{ padding: '1.5rem' }}>
-        <h2>Resumen ejecutivo</h2>
-        <p>
-          Producción Inteligente es una plataforma SaaS orientada a mejorar la planificación,
-          control y trazabilidad de las operaciones productivas. Su propósito es ayudar a las
-          empresas a producir mejor, reducir desperdicios y tomar decisiones operativas basadas en
-          información.
-        </p>
-        <p>
-          La solución integra procesos de forecast, producción, inventario, compras, recetas,
-          productos y gestión de mermas dentro de una misma plataforma.
-        </p>
-      </section>
-
-      <section className="card" style={{ padding: '1.5rem' }}>
-        <h2>Objetivo del proyecto</h2>
-        <p>
-          Construir una herramienta SaaS que permita a empresas con operaciones productivas
-          planificar su producción, controlar inventarios, gestionar mermas y mejorar la
-          trazabilidad de sus operaciones.
-        </p>
-      </section>
-
-      <section className="card" style={{ padding: '1.5rem' }}>
-        <h2>Clientes potenciales</h2>
-        <ul>
-          <li>Panaderías y pastelerías.</li>
-          <li>Cadenas de tiendas con producción centralizada.</li>
-          <li>Empresas de alimentación y restauración.</li>
-          <li>Negocios con producción recurrente y múltiples puntos de venta.</li>
-          <li>Empresas que necesitan controlar inventario, producción y merma.</li>
-        </ul>
-      </section>
-
-      <section className="card" style={{ padding: '1.5rem' }}>
-        <h2>Propuesta de valor</h2>
-        <p>
-          La promesa básica de Producción Inteligente es convertir los datos operativos en
-          decisiones concretas de producción, ayudando a producir lo necesario, controlar el
-          inventario y reducir las pérdidas.
-        </p>
-      </section>
-
-      <section className="card" style={{ padding: '1.5rem' }}>
-        <h2>Beneficios esperados</h2>
-        <ul>
-          <li>Mejor planificación de la producción.</li>
-          <li>Mayor control del inventario.</li>
-          <li>Reducción y trazabilidad de las mermas.</li>
-          <li>Mayor visibilidad de la operación.</li>
-          <li>Centralización de la información operativa.</li>
-          <li>Base para decisiones apoyadas por IA.</li>
-        </ul>
-      </section>
-
-      <section className="card" style={{ padding: '1.5rem' }}>
-        <h2>Situación actual del desarrollo</h2>
-        <p>
-          El proyecto cuenta actualmente con una arquitectura SaaS funcional basada en React,
-          Cloudflare Workers y D1, con autenticación, multiempresa y módulos operativos principales
-          implementados.
-        </p>
-
+      {/* PDF Modal (for full-screen zoom or overlay) */}
+      {showPdfModal && (
         <div
           style={{
-            marginTop: '1rem',
-            padding: '1rem',
-            border: '1px solid var(--border)',
-            borderRadius: 10,
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.8)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.5rem',
           }}
+          onClick={() => setShowPdfModal(false)}
         >
-          <strong>Avance estimado del producto: MVP funcional en desarrollo</strong>
-          <p
+          <div
             style={{
-              margin: '0.4rem 0 0',
-              color: 'var(--muted)',
+              background: 'white',
+              borderRadius: '16px',
+              width: '92vw',
+              maxWidth: '1200px',
+              height: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              overflow: 'hidden',
             }}
+            onClick={(e) => e.stopPropagation()}
           >
-            El porcentaje global debe actualizarse conforme se incorporen y validen nuevos módulos.
-          </p>
+            <div
+              style={{
+                padding: '1rem 1.5rem',
+                borderBottom: '1px solid var(--border)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: '#f8fafc',
+              }}
+            >
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--text)' }}>
+                  Documento Completo - Resumen Ejecutivo
+                </h3>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--muted)' }}>
+                  Visualizador interactivo de documento
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={handlePrint}
+                  className="btn-secondary"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    padding: '0.5rem 1rem',
+                  }}
+                >
+                  <Printer size={16} /> Imprimir
+                </button>
+                <a
+                  href="/Manual_Usuario_v1.0.pdf"
+                  download="Resumen_Ejecutivo_Produccion_Inteligente.pdf"
+                  className="btn-primary"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    padding: '0.5rem 1rem',
+                    textDecoration: 'none',
+                  }}
+                >
+                  <Download size={16} /> Descargar PDF
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setShowPdfModal(false)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    fontSize: '1.25rem',
+                    cursor: 'pointer',
+                    color: 'var(--muted)',
+                    padding: '0.25rem 0.5rem',
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <div style={{ flex: 1, background: '#525659' }}>
+              <iframe
+                src="/Manual_Usuario_v1.0.pdf#view=FitH&pagemode=none"
+                title="Visualizador PDF Completo"
+                style={{ width: '100%', height: '100%', border: 'none' }}
+              />
+            </div>
+          </div>
         </div>
-      </section>
-
-      <section className="card" style={{ padding: '1.5rem' }}>
-        <h2>Próximos pasos</h2>
-        <ol>
-          <li>Completar el módulo de reportes ejecutivos.</li>
-          <li>Incorporar exportación del reporte a PDF.</li>
-          <li>Incorporar envío del reporte por correo mediante Brevo.</li>
-          <li>Continuar validando los módulos operativos.</li>
-          <li>Preparar la solución para pilotos con clientes.</li>
-        </ol>
-      </section>
-
-      <div
-        className="card"
-        style={{
-          padding: '1rem',
-          display: 'flex',
-          justifyContent: 'flex-end',
-          gap: '0.75rem',
-        }}
-      >
-        <button type="button" className="btn-primary no-print" onClick={() => window.print()}>
-          <Download size={16} />
-          Exportar PDF
-        </button>
-
-        <button type="button" className="btn-primary" disabled>
-          <Mail size={16} />
-          Enviar por correo
-        </button>
-      </div>
+      )}
     </div>
   );
 }
