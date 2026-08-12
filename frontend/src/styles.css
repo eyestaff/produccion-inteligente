@@ -23,6 +23,7 @@
 
 body {
   margin: 0;
+  zoom: 0.75;
   background: var(--bg);
   background-image: 
     radial-gradient(at 0% 0%, hsla(217,100%,94%,1) 0px, transparent 50%),
